@@ -6,7 +6,6 @@
   const DEFAULT_CACHE_TTL_HOURS = 24 * 7;
   const SEARCH_SCAN_DEBOUNCE_MS = 250;
   const ANALYSIS_CONCURRENCY = 2;
-  const MIN_ANALYZABLE_TEXT_LENGTH = 180;
   const RESULT_H3_SELECTOR = "#search a h3";
   const RESULT_CONTAINER_SELECTOR = "div.MjjYud, div.g";
   const RESULT_SNIPPET_SELECTOR = ".VwiC3b, .IsZvec, .s3v9rd";
@@ -18,15 +17,6 @@
     "ai-screener-card-unknown",
     "ai-screener-card-checking",
     "ai-screener-card-error"
-  ];
-  const ARTICLE_CANDIDATE_SELECTORS = [
-    "article",
-    "main",
-    "[role='main']",
-    "[itemprop='articleBody']",
-    ".post",
-    ".entry-content",
-    ".article-body"
   ];
 
   const DEFAULT_SETTINGS = {
@@ -254,10 +244,7 @@
         return cached;
       }
 
-      let payload = await fetchAndExtractPayload(result.url);
-      if (!payload.text || payload.text.length < MIN_ANALYZABLE_TEXT_LENGTH) {
-        payload = buildPayloadFromSnippet(result);
-      }
+      const payload = buildPayloadFromSnippet(result);
 
       const analyzed = analyzePayload(payload);
       const record = {
@@ -286,22 +273,6 @@
       return null;
     }
     return cached;
-  }
-
-  async function fetchAndExtractPayload(url) {
-    try {
-      const response = await sendMessage({
-        type: "FETCH_HTML",
-        url
-      });
-      if (!response || !response.ok || !response.html) {
-        return createEmptyPayload("fetched");
-      }
-      return extractFromHtml(response.html, response.finalUrl || url);
-    } catch (error) {
-      console.debug("[ai-screener] fetch fallback to snippet", error);
-      return createEmptyPayload("fetched");
-    }
   }
 
   function buildPayloadFromSnippet(result) {
@@ -391,103 +362,6 @@
     }
     const z = Math.exp(x);
     return z / (1 + z);
-  }
-
-  function extractFromHtml(html, url) {
-    try {
-      const sanitized = sanitizeFetchedHtml(html);
-      const doc = new DOMParser().parseFromString(sanitized, "text/html");
-      return extractFromDocument(doc, url, "fetched");
-    } catch (_error) {
-      return createEmptyPayload("fetched");
-    }
-  }
-
-  function sanitizeFetchedHtml(html) {
-    return String(html || "").replace(/<base\b[^>]*>/gi, "");
-  }
-
-  function createEmptyPayload(source) {
-    return {
-      text: "",
-      headingsText: "",
-      externalLinkCount: 0,
-      source
-    };
-  }
-
-  function extractFromDocument(doc, url, source = "document") {
-    const body = doc.body;
-    if (!body) {
-      return createEmptyPayload(source);
-    }
-
-    const clone = body.cloneNode(true);
-    for (const node of clone.querySelectorAll("script,style,noscript,svg,canvas,iframe,form")) {
-      node.remove();
-    }
-    for (const node of clone.querySelectorAll("nav,footer,header,aside")) {
-      node.remove();
-    }
-
-    const mainElement = pickMainTextElement(clone);
-    const text = normalizeText(mainElement.innerText || clone.innerText || "");
-    const headingsText = Array.from(mainElement.querySelectorAll("h1,h2,h3"))
-      .map((node) => normalizeText(node.innerText || ""))
-      .filter(Boolean)
-      .join(" ");
-
-    return {
-      text,
-      headingsText,
-      externalLinkCount: countExternalLinks(mainElement, url),
-      source
-    };
-  }
-
-  function pickMainTextElement(root) {
-    let best = null;
-    let bestLength = 0;
-
-    for (const selector of ARTICLE_CANDIDATE_SELECTORS) {
-      for (const element of root.querySelectorAll(selector)) {
-        const length = normalizeText(element.innerText || "").length;
-        if (length > bestLength) {
-          best = element;
-          bestLength = length;
-        }
-      }
-    }
-
-    return best || root;
-  }
-
-  function countExternalLinks(root, pageUrl) {
-    let host = "";
-    try {
-      host = new URL(pageUrl).host;
-    } catch (_error) {
-      host = "";
-    }
-
-    let count = 0;
-    for (const anchor of root.querySelectorAll("a[href]")) {
-      const href = anchor.getAttribute("href");
-      if (!href || !/^https?:\/\//i.test(href)) {
-        continue;
-      }
-
-      try {
-        const linked = new URL(href);
-        if (!host || linked.host !== host) {
-          count += 1;
-        }
-      } catch (_error) {
-        continue;
-      }
-    }
-
-    return count;
   }
 
   function ensureResultCard(container) {
@@ -828,19 +702,6 @@
       return channel / 12.92;
     }
     return ((channel + 0.055) / 1.055) ** 2.4;
-  }
-
-  async function sendMessage(message) {
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(message, (response) => {
-        const error = chrome.runtime.lastError;
-        if (error) {
-          reject(new Error(error.message));
-          return;
-        }
-        resolve(response);
-      });
-    });
   }
 
   function getFromStorage(key) {

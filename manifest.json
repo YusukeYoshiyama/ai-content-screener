@@ -6,12 +6,6 @@
   "permissions": [
     "storage"
   ],
-  "host_permissions": [
-    "https://*/*"
-  ],
-  "background": {
-    "service_worker": "src/background/service-worker.js"
-  },
   "content_scripts": [
     {
       "matches": [
