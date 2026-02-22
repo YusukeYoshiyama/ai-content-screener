@@ -1,5 +1,5 @@
 {
-  "manifest_version": 1,
+  "manifest_version": 3,
   "name": "AI Content Screener",
   "description": "検索結果にAI生成っぽさスコアを表示します。",
   "version": "0.1.0",
