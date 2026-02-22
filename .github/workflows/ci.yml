@@ -48,12 +48,8 @@ jobs:
 
       - name: Build extension zip artifact
         run: |
-          mkdir -p dist
-          inputs=("manifest.json" "src")
-          if [ -d "icon" ]; then
-            inputs+=("icon")
-          fi
-          zip -r "dist/ai-content-screener-${GITHUB_SHA::7}.zip" "${inputs[@]}" -x "*.DS_Store"
+          chmod +x scripts/build_extension_zip.sh
+          scripts/build_extension_zip.sh "dist/ai-content-screener-${GITHUB_SHA::7}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -61,4 +57,3 @@ jobs:
           name: extension-zip-${{ github.sha }}
           path: dist/*.zip
           if-no-files-found: error
-
