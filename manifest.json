@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "AI Content Screener",
+  "description": "検索結果にAI生成っぽさスコアを表示します。",
+  "version": "0.1.0",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/content/hash-model.js",
+        "src/content/main.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "src/options/options.html"
+}

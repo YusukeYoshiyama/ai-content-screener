@@ -1,0 +1,41 @@
+# OS / File manager
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+.env.*
+
+# Node / Package manager
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build artifacts
+dist/
+build/
+*.zip
+
+# Logs / Temp
+*.log
+tmp/
+temp/
+
+# Local datasets and generated evaluation outputs
+data/raw/
+data/processed/
