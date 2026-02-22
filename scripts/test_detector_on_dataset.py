@@ -27,6 +27,8 @@ DEFAULT_HUMAN_THRESHOLD = 0.45
 DEFAULT_AI_THRESHOLD = 0.55
 
 WORKER_MODEL: Optional[Dict] = None
+WORKER_MODEL_JA: Optional[Dict] = None
+JP_CHAR_RE = re.compile(r"[\u3040-\u30ff\u4e00-\u9fff]")
 
 
 def normalize_text(value: str) -> str:
@@ -87,6 +89,16 @@ def compute_score(text: str, model: Dict) -> float:
     return sigmoid(logit)
 
 
+def is_likely_japanese_text(text: str) -> bool:
+    sample = str(text or "")[:2400]
+    if not sample:
+        return False
+    jp_count = len(JP_CHAR_RE.findall(sample))
+    if jp_count >= 40:
+        return True
+    return jp_count >= 8 and (jp_count / max(1, len(sample))) >= 0.03
+
+
 def predict_judge(score: float, human_threshold: float, ai_threshold: float) -> str:
     if score < human_threshold:
         return "Human"
@@ -141,11 +153,17 @@ class EvalState:
     pred_counts: Counter = field(default_factory=Counter)
     conf: Counter = field(default_factory=Counter)  # key=(gt,pred)
     score_sum: float = 0.0
+    jp_rows: int = 0
+    jp_strict_correct: int = 0
+    non_jp_rows: int = 0
+    non_jp_strict_correct: int = 0
 
 
-def init_worker(model: Dict) -> None:
+def init_worker(model: Dict, model_ja: Optional[Dict]) -> None:
     global WORKER_MODEL
+    global WORKER_MODEL_JA
     WORKER_MODEL = model
+    WORKER_MODEL_JA = model_ja
 
 
 def evaluate_valid_rows(
@@ -153,8 +171,12 @@ def evaluate_valid_rows(
     human_threshold: float,
     ai_threshold: float,
     model: Optional[Dict] = None,
+    model_ja: Optional[Dict] = None,
+    human_threshold_ja: Optional[float] = None,
+    ai_threshold_ja: Optional[float] = None,
 ) -> Dict[str, float]:
     actual_model = model if model is not None else WORKER_MODEL
+    actual_model_ja = model_ja if model_ja is not None else WORKER_MODEL_JA
     if actual_model is None:
         raise RuntimeError("Model is not initialized")
 
@@ -174,15 +196,39 @@ def evaluate_valid_rows(
     human_ai = 0
     human_human = 0
     human_unknown = 0
+    jp_rows = 0
+    jp_strict_correct = 0
+    non_jp_rows = 0
+    non_jp_strict_correct = 0
 
     for gt, text in rows:
-        score = compute_score(text, actual_model)
-        pred = predict_judge(score, human_threshold=human_threshold, ai_threshold=ai_threshold)
+        row_model = actual_model
+        row_human_threshold = human_threshold
+        row_ai_threshold = ai_threshold
+
+        is_japanese = is_likely_japanese_text(text)
+        if actual_model_ja is not None and is_japanese:
+            row_model = actual_model_ja
+            row_human_threshold = human_threshold if human_threshold_ja is None else float(human_threshold_ja)
+            row_ai_threshold = ai_threshold if ai_threshold_ja is None else float(ai_threshold_ja)
+
+        score = compute_score(text, row_model)
+        pred = predict_judge(score, human_threshold=row_human_threshold, ai_threshold=row_ai_threshold)
 
         total += 1
         score_sum += score
         if pred == gt:
             strict_correct += 1
+
+        if is_japanese:
+            jp_rows += 1
+            if pred == gt:
+                jp_strict_correct += 1
+        else:
+            non_jp_rows += 1
+            if pred == gt:
+                non_jp_strict_correct += 1
+
         if pred != "Unknown":
             decided_rows += 1
             if pred == gt:
@@ -229,6 +275,10 @@ def evaluate_valid_rows(
         "human_ai": human_ai,
         "human_human": human_human,
         "human_unknown": human_unknown,
+        "jp_rows": jp_rows,
+        "jp_strict_correct": jp_strict_correct,
+        "non_jp_rows": non_jp_rows,
+        "non_jp_strict_correct": non_jp_strict_correct,
     }
 
 
@@ -249,6 +299,10 @@ def merge_partial_result(state: EvalState, part: Dict[str, float]) -> None:
     state.conf[("Human", "AI")] += int(part["human_ai"])
     state.conf[("Human", "Human")] += int(part["human_human"])
     state.conf[("Human", "Unknown")] += int(part["human_unknown"])
+    state.jp_rows += int(part["jp_rows"])
+    state.jp_strict_correct += int(part["jp_strict_correct"])
+    state.non_jp_rows += int(part["non_jp_rows"])
+    state.non_jp_strict_correct += int(part["non_jp_strict_correct"])
 
 
 def select_valid_rows(
@@ -290,8 +344,11 @@ def precision_recall_f1(tp: int, fp: int, fn: int) -> Tuple[float, float, float]
 def run_evaluation(
     parquet_path: Path,
     model: Dict,
+    model_ja: Optional[Dict],
     human_threshold: float,
     ai_threshold: float,
+    human_threshold_ja: float,
+    ai_threshold_ja: float,
     max_rows: int,
     workers: int,
 ) -> Dict:
@@ -312,6 +369,9 @@ def run_evaluation(
                     human_threshold=human_threshold,
                     ai_threshold=ai_threshold,
                     model=model,
+                    model_ja=model_ja,
+                    human_threshold_ja=human_threshold_ja,
+                    ai_threshold_ja=ai_threshold_ja,
                 )
                 merge_partial_result(state, part)
             if should_stop:
@@ -322,7 +382,7 @@ def run_evaluation(
         with concurrent.futures.ProcessPoolExecutor(
             max_workers=worker_count,
             initializer=init_worker,
-            initargs=(model,),
+            initargs=(model, model_ja),
         ) as executor:
             for batch in pf.iter_batches(columns=["text", "label"], batch_size=2048):
                 rows = batch.to_pylist()
@@ -336,6 +396,10 @@ def run_evaluation(
                             valid_rows,
                             human_threshold,
                             ai_threshold,
+                            None,
+                            None,
+                            human_threshold_ja,
+                            ai_threshold_ja,
                         )
                     )
 
@@ -369,12 +433,18 @@ def run_evaluation(
     coverage = state.decided_rows / state.total if state.total else 0.0
     unknown_rate = state.pred_counts["Unknown"] / state.total if state.total else 0.0
     avg_score = state.score_sum / state.total if state.total else 0.0
+    jp_strict_accuracy = state.jp_strict_correct / state.jp_rows if state.jp_rows else 0.0
+    non_jp_strict_accuracy = state.non_jp_strict_correct / state.non_jp_rows if state.non_jp_rows else 0.0
 
     return {
         "input": str(parquet_path),
         "thresholds": {
             "human_max": round(human_threshold, 4),
             "ai_min": round(ai_threshold, 4),
+        },
+        "thresholds_ja": {
+            "human_max": round(human_threshold_ja, 4),
+            "ai_min": round(ai_threshold_ja, 4),
         },
         "max_rows": max_rows,
         "processed_rows": state.total,
@@ -384,6 +454,12 @@ def run_evaluation(
         "coverage": round(coverage, 6),
         "unknown_rate": round(unknown_rate, 6),
         "avg_score": round(avg_score, 4),
+        "language_segments": {
+            "jp_rows": state.jp_rows,
+            "jp_strict_accuracy": round(jp_strict_accuracy, 6),
+            "non_jp_rows": state.non_jp_rows,
+            "non_jp_strict_accuracy": round(non_jp_strict_accuracy, 6),
+        },
         "ground_truth_counts": dict(state.gt_counts),
         "prediction_counts": dict(state.pred_counts),
         "confusion_matrix": {
@@ -403,6 +479,15 @@ def run_evaluation(
             "dim": model["dim"],
             "max_chars": model["max_chars"],
         },
+        "model_ja": (
+            {
+                "name": model_ja["name"],
+                "dim": model_ja["dim"],
+                "max_chars": model_ja["max_chars"],
+            }
+            if model_ja is not None
+            else None
+        ),
     }
 
 
@@ -419,6 +504,11 @@ def parse_args() -> argparse.Namespace:
         help="Model json path",
     )
     parser.add_argument(
+        "--model-ja",
+        default="",
+        help="Japanese model json path (optional)",
+    )
+    parser.add_argument(
         "--human-threshold",
         type=float,
         default=-1.0,
@@ -429,6 +519,18 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=-1.0,
         help="score >= ai-threshold -> AI (between is Unknown; negative means use model default)",
+    )
+    parser.add_argument(
+        "--human-threshold-ja",
+        type=float,
+        default=-1.0,
+        help="JP: score < human-threshold-ja -> Human (negative means use JA model default)",
+    )
+    parser.add_argument(
+        "--ai-threshold-ja",
+        type=float,
+        default=-1.0,
+        help="JP: score >= ai-threshold-ja -> AI (negative means use JA model default)",
     )
     parser.add_argument("--max-rows", type=int, default=0, help="0 means all rows")
     parser.add_argument(
@@ -448,6 +550,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     model = load_model(Path(args.model))
+    model_ja = load_model(Path(args.model_ja)) if args.model_ja else None
 
     model_human = clamp(float(model.get("thresholds", {}).get("human_max", DEFAULT_HUMAN_THRESHOLD)), 0.0, 1.0)
     model_ai = clamp(float(model.get("thresholds", {}).get("ai_min", DEFAULT_AI_THRESHOLD)), 0.0, 1.0)
@@ -457,11 +560,31 @@ def main() -> None:
     if ai_threshold <= human_threshold:
         raise ValueError("--ai-threshold must be greater than --human-threshold")
 
+    if model_ja is None:
+        human_threshold_ja = human_threshold
+        ai_threshold_ja = ai_threshold
+    else:
+        model_human_ja = clamp(
+            float(model_ja.get("thresholds", {}).get("human_max", DEFAULT_HUMAN_THRESHOLD)),
+            0.0,
+            1.0,
+        )
+        model_ai_ja = clamp(float(model_ja.get("thresholds", {}).get("ai_min", DEFAULT_AI_THRESHOLD)), 0.0, 1.0)
+        human_threshold_ja = (
+            model_human_ja if args.human_threshold_ja < 0 else clamp(args.human_threshold_ja, 0.0, 1.0)
+        )
+        ai_threshold_ja = model_ai_ja if args.ai_threshold_ja < 0 else clamp(args.ai_threshold_ja, 0.0, 1.0)
+        if ai_threshold_ja <= human_threshold_ja:
+            raise ValueError("--ai-threshold-ja must be greater than --human-threshold-ja")
+
     result = run_evaluation(
         parquet_path=Path(args.input),
         model=model,
+        model_ja=model_ja,
         human_threshold=human_threshold,
         ai_threshold=ai_threshold,
+        human_threshold_ja=human_threshold_ja,
+        ai_threshold_ja=ai_threshold_ja,
         max_rows=max(0, int(args.max_rows)),
         workers=max(1, int(args.workers)),
     )

@@ -1,5 +1,5 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 1,
   "name": "AI Content Screener",
   "description": "検索結果にAI生成っぽさスコアを表示します。",
   "version": "0.1.0",
@@ -12,6 +12,12 @@
   "permissions": [
     "storage"
   ],
+  "host_permissions": [
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -20,6 +26,7 @@
       ],
       "js": [
         "src/content/hash-model.js",
+        "src/content/hash-model-ja.js",
         "src/content/main.js"
       ],
       "run_at": "document_idle"
