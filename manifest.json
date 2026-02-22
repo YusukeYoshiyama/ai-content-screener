@@ -4,11 +4,9 @@
   "description": "検索結果にAI生成っぽさスコアを表示します。",
   "version": "0.1.0",
   "permissions": [
-    "storage",
-    "activeTab"
+    "storage"
   ],
   "host_permissions": [
-    "http://*/*",
     "https://*/*"
   ],
   "background": {
@@ -17,7 +15,8 @@
   "content_scripts": [
     {
       "matches": [
-        "<all_urls>"
+        "https://www.google.com/*",
+        "https://www.google.co.jp/*"
       ],
       "js": [
         "src/content/hash-model.js",

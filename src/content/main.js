@@ -395,11 +395,16 @@
 
   function extractFromHtml(html, url) {
     try {
-      const doc = new DOMParser().parseFromString(html, "text/html");
+      const sanitized = sanitizeFetchedHtml(html);
+      const doc = new DOMParser().parseFromString(sanitized, "text/html");
       return extractFromDocument(doc, url, "fetched");
     } catch (_error) {
       return createEmptyPayload("fetched");
     }
+  }
+
+  function sanitizeFetchedHtml(html) {
+    return String(html || "").replace(/<base\b[^>]*>/gi, "");
   }
 
   function createEmptyPayload(source) {
