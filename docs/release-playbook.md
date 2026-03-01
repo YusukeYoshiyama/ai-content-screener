@@ -1,34 +1,53 @@
-# Release Playbook
+# Release Playbook (Current)
 
-## Branch strategy
+## ブランチ運用
+- 開発: `develop`
+- 本番反映: `develop` から `main` へPRを作成してマージ
+- `main` への直接pushはしない
 
-- 通常開発は `develop` で行う
-- `main` へのマージは Pull Request 経由のみ
-- `main` へのPR時に CI を実行して品質確認
+## CI/CD
 
-## Required secrets (GitHub Actions)
+### CI
+- Workflow: `.github/workflows/ci.yml`
+- Trigger:
+  - `push` to `develop`
+  - `pull_request` to `main`
+  - `workflow_dispatch`
+- 実行内容:
+  - `manifest.json` のJSON検証
+  - `src/**/*.js` の `node --check`
+  - `scripts/*.py` の構文チェック
+  - 拡張ZIP作成とartifact保存
 
+### Release to Chrome Web Store
+- Workflow: `.github/workflows/release-cws.yml`
+- Trigger: `v*` タグpush
+- 主な検証:
+  - タグ形式 `vX.Y.Z`
+  - タグコミットが `origin/main` に含まれる
+  - タグのバージョンと `manifest.json` の `version` 一致
+
+## 必要なSecrets (GitHub Actions)
 - `CWS_CLIENT_ID`
 - `CWS_CLIENT_SECRET`
 - `CWS_REFRESH_TOKEN`
 - `CWS_PUBLISHER_ID`
 - `CWS_EXTENSION_ID`
 
-## CI flow
+## ローカルでZIPを作る
+```bash
+cd <repo-root>
+scripts/build_extension_zip.sh
+```
 
-- トリガー:
-  - `pull_request` to `main`
-  - `push` to `develop`
-- 実行内容:
-  - `manifest.json` のJSON検証
-  - `src/**/*.js` の `node --check`
-  - `scripts/*.py` の構文検証
-  - 配布用zip作成とartifact保存
+- 生成先: `dist/ai-content-screener-v<manifest.version>.zip`
+- 追加チェック:
+  - `manifest_version` が `3` であること
+  - `manifest.icons` に定義したアイコン実ファイルが存在すること
+  - ZIP内に `manifest.json` と各アイコンが含まれること
 
-## Release flow
-
-1. `develop` でリリース準備を実行
-
+## リリース手順
+1. `develop` でバージョン更新＋ZIP作成
 ```bash
 git checkout develop
 scripts/prepare_release.sh 0.1.1
@@ -36,24 +55,17 @@ git add manifest.json
 git commit -m "chore: release v0.1.1"
 git push origin develop
 ```
-
-2. `develop` -> `main` のPRをマージ
-3. `main` でタグを作成してpush
-
+2. `develop -> main` のPRを作成しマージ
+3. タグ作成とpush
 ```bash
 git checkout main
 git pull origin main
 git tag v0.1.1
 git push origin v0.1.1
 ```
+4. Actionsの `Release to Chrome Web Store` 成功を確認
 
-4. GitHub Actions の `Release to Chrome Web Store` を確認
-5. `production` environment 承認が必要な場合は承認
-6. publish成功ログを確認
-
-## Important notes
-
-- タグ名 (`vX.Y.Z`) と `manifest.json` の `version` は一致必須
-- 不一致の場合、release workflow は失敗する仕様
-- タグ対象コミットが `main` に含まれない場合、release workflow は失敗する仕様
-- 公開失敗時は `upload_response.json` と `publish_response.json` のログを確認する
+## 公開リポジトリ注意事項
+- SecretsはGitHubの `Repository/Environment Secrets` のみで管理する。
+- ローカル `.env` やトークン応答ファイルをコミットしない。
+- 申請時の文面には、実装と一致する権限理由のみを記載する。

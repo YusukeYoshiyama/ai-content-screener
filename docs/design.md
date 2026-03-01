@@ -1,176 +1,68 @@
-# AI Content Screener Design Doc (Local-Only)
+# AI Content Screener Design (Current)
 
-## 1. 背景と目的
-- 目的: ブラウザ上で閲覧中の記事に対して「AI生成っぽさ」をローカル環境だけで推定し、ユーザーにラベル表示する。
-- 制約: 外部APIにテキスト送信しない。判定は拡張機能内で完結させる。
+## 目的
+- Google検索結果ページに、各検索結果の `Score` と `Judge` を表示する。
+- 判定は拡張機能内で実行し、外部APIへ判定結果を送信しない。
 
-## 2. スコープ
-### 2.1 対象 (MVP)
-- Google検索結果ページで、各検索結果ごとに判定表示
-- 記事ページ本文の抽出
-- AI生成っぽさスコア (0-100) の算出
-- 3段階ラベル表示 (`低` / `中` / `高`)
-- 閾値を超えた記事を `AI記事候補` として表示
-- 判定結果のローカルキャッシュ
-- オプション画面で閾値と重みの調整
+## 現在の動作範囲
+- 表示対象ページ: `https://www.google.com/*`, `https://www.google.co.jp/*`
+- 表示対象パス: 実行時に `location.pathname === "/search"` を満たすページ
+- 表示内容: `Score`（0.00-1.00）と `Judge`（Human / Unknown / AI）
 
-### 2.2 非対象 (MVP外)
-- 「AI生成かどうか」の断定
-- 外部サービス連携 (クラウド推論、外部DB照合)
-- 自動ブロック/自動非表示 (まずは表示のみにする)
+## アーキテクチャ (MV3)
+- `manifest.json`
+  - `manifest_version: 3`
+  - `permissions: ["storage"]`
+  - `host_permissions: ["https://*/*"]`
+  - `background.service_worker: src/background/service-worker.js`
+  - `content_scripts`: `hash-model.js`, `hash-model-ja.js`, `main.js`
+- `src/content/main.js`
+  - Google検索結果DOMの走査
+  - スニペット/取得HTMLから判定用テキストを生成
+  - ローカル推論とカード描画
+  - `chrome.storage.local` キャッシュ
+- `src/background/service-worker.js`
+  - 指定URLのHTML取得（`FETCH_HTML`）
+  - タイムアウト/サイズ上限/HTML以外の除外
+- `src/options/options.html`, `src/options/options.js`
+  - 設定項目: `enabled`, `cacheTTLHours`
 
-## 3. 要件
-### 3.1 機能要件
-- `content_script`で本文候補を抽出し、整形テキストを作る
-- 特徴量を計算して総合スコアを出す
-- 検索結果ごとに `Score` と `Judge` を表示する
-- DOM変化時 (SPA) は再判定する
+## 判定ロジック
+- 文字3-gramハッシュ特徴のNaive Bayes系スコア
+- モデル切替:
+  - 既定モデル: `src/content/hash-model.js`
+  - 日本語モデル: `src/content/hash-model-ja.js`
+  - 日本語文字比率でモデルを自動選択
+- 判定閾値:
+  - `0.00 <= score < 0.45`: `Human`
+  - `0.45 <= score < 0.55`: `Unknown`
+  - `0.55 <= score <= 1.00`: `AI`
 
-### 3.2 非機能要件
-- 1ページ判定は目標300ms以内 (本文5,000文字程度)
-- 通信不要で動作
-- 判定ロジックは差し替え可能な構成
-- 検索UIのレイアウトを壊さない (重なり/クリック阻害を避ける)
+## テキスト抽出フロー
+1. 検索結果カードのURLを抽出
+2. Backgroundでリンク先HTMLを取得
+3. `DOMParser` で解析し、`script/style/iframe/...` 等を除去
+4. `article/main/[role=main]` など候補から本文量最大の要素を採用
+5. 本文が短すぎる場合は、検索結果の `title + snippet` へフォールバック
 
-## 4. 全体構成 (Chrome Extension MV3)
-- `manifest.json`: 権限・各スクリプト定義
-- `src/content/main.ts`: 本文抽出、特徴量算出、ラベル描画
-- `src/background/service-worker.ts`: 設定/キャッシュ管理
-- `src/options/index.html|ts`: 閾値・重み・ON/OFF設定
-- `src/shared/scoring.ts`: スコア計算
-- `src/shared/extractor.ts`: 記事本文抽出
+## キャッシュ
+- 保存先: `chrome.storage.local`
+- キー: `cache:<url_hash>`
+- 保存値: `score`, `judge`, `displayScore`, `source`, `updatedAt`, `cacheVersion`, `contentHash`
+- TTL: 既定 `168` 時間（7日）
 
-```text
-Page DOM
-  -> extractor (本文抽出)
-  -> feature calc (特徴量)
-  -> scoring (0-100)
-  -> badge renderer (ページ表示)
-  -> cache (chrome.storage.local)
-```
+## UI仕様
+- 結果カードは検索結果行の左側に配置
+- 幅が狭い場合はインライン表示へフォールバック
+- 表示文言は最小構成（`Score`, `Judge`）
+- ライト/ダークを自動判定して配色切替
 
-## 5. 判定ロジック方針
-MVPはルールベースで開始し、将来オンデバイスモデルを追加できるようにする。
+## 既知の制約
+- 判定は推定であり、真偽を保証しない。
+- データ分布が対象ドメインと異なると精度が低下しうる。
+- ホスト権限が広いため、審査時に理由説明が必要。
 
-### 5.1 ルールベース特徴量 (初期案)
-- `f1`: 反復率 (同一/類似n-gramの比率)
-- `f2`: 文長ばらつきの低さ (均一すぎる文体)
-- `f3`: 見出しと本文の意味重複率 (見出しの言い換え反復)
-- `f4`: 定型句率 (「本記事では〜」「以下で解説します」等)
-- `f5`: 接続詞/列挙の過密率 (「まず」「次に」「さらに」連続)
-- `f6`: 具体性シグナル不足 (固有名詞、数字、一次情報リンクの不足)
-
-### 5.2 スコア式
-```text
-score = sigmoid(
-  prior_logit + Σ delta[hash(char_trigram)]
-)  // 0.00 - 1.00
-```
-
-### 5.3 判定ルール (固定)
-- ラベル:
-  - `0.00-0.44`: `Human`
-  - `0.45-0.54`: `Unknown`
-  - `0.55-1.00`: `AI`
-- 画面表示:
-  - `displayScore = score.toFixed(2)` (例: `0.87`)
-  - `judge = Human / Unknown / AI`
-
-### 5.4 理由表示
-- スコア上位の特徴量を2-3件表示
-  - 例: `定型句率が高い`, `文長ばらつきが小さい`
-- ユーザーが「なぜその判定か」を追える状態を必須とする
-
-## 6. 将来拡張 (ローカルのみ)
-抽象インターフェースを先に用意して差し替える。
-
-- `Detector` interface
-  - `analyze(text): { score, reasons[] }`
-- 実装1: `HeuristicDetector` (MVP)
-- 実装2: `OnDeviceLLMDetector` (Chrome Prompt APIが使える環境)
-- 実装3: `TransformersDetector` (transformers.js + ONNX)
-
-これにより、MVP実装を壊さずに精度改善できる。
-
-## 7. データ設計
-### 7.1 保存先
-- `chrome.storage.local`
-
-### 7.2 キー設計
-- `settings`: 閾値、重み、機能ON/OFF
-- `cache:<urlHash>`: `score`, `label`, `features`, `updatedAt`, `contentHash`
-
-### 7.3 キャッシュ更新
-- `contentHash`が変わらない場合は再計算をスキップ
-- TTL (例: 7日) を超えたら再計算
-
-## 8. パーミッションとプライバシー
-- 必要最小権限:
-  - `storage`
-  - `activeTab`
-  - 必要なら対象ドメインの`host_permissions`
-- 不要権限:
-  - 外部通信系 (`fetch`で外部API送信しない)
-- プライバシー方針:
-  - テキストは端末外へ送信しない
-  - 結果はローカル保存のみ
-
-## 9. UI方針
-- 検索結果ページ (Google): 添付モック準拠
-  - 各結果行の左側にカード表示
-  - 表示内容: `Score : 0.87` / `Judge : AI` の2行
-  - 判定中は `Score : --` / `Judge : Checking`
-- 記事ページ: 右上固定バッジ (既存仕様を継続)
-  - `Score : 0.87 / Judge : AI`
-- クリックで根拠を表示 (上位特徴量2-3件)
-- 誤判定対策として免責文を常時表示
-  - 「本判定は推定であり、真偽を断定しません」
-
-### 9.1 配色/視認性ルール
-- `Judge: Human`: 灰/緑系
-- `Judge: AI`: 赤系
-- `Judge: Checking`: 中立色
-- 色だけに依存せず、必ずテキストでも状態を表示
-- ライト/ダークモードを自動判定し、同一UIをテーマ別トークンで配色切替する
-
-### 9.2 レイアウト実装ルール (検索結果ページ)
-- 各検索結果コンテナ (`div.g` など) に対して、カードを絶対配置で左側へ描画
-- 結果行コンテナには `position: relative` を付与する
-- カードは `pointer-events: none` を基本にして検索操作を阻害しない
-- 画面幅が狭い場合は、カードを結果タイトル下のインライン表示へフォールバック
-
-## 10. 実装ステップ
-1. MV3最小構成の雛形を作る
-2. 本文抽出器 (`extractor`) を実装
-3. 文字3-gramハッシュNBスコアを実装
-4. `0.45/0.55` の3段階判定ロジックを実装
-5. バッジ/チップUIと根拠表示を実装
-6. オプション画面で有効/TTLを変更可能にする
-7. キャッシュ/再判定条件を実装
-8. 手動評価データで重みを調整
-
-## 11. 検証計画
-- 自前データセット (最低100記事)
-  - 人手作成記事
-  - AI生成記事
-  - AI下書き+人間編集記事
-- 指標:
-  - Precision / Recall / F1 (特に`高`ラベルの適合率)
-  - 判定速度
-- 受け入れ基準 (MVP):
-  - 高ラベルのPrecision 0.75以上
-  - 平均判定時間300ms以内
-
-## 12. リスクと対策
-- リスク: 言い換え・編集で回避される
-  - 対策: 断定しないUI、根拠提示、重み調整機能
-- リスク: サイトごとのDOM差分で抽出失敗
-  - 対策: 汎用抽出 + フォールバック戦略
-- リスク: 日本語特有の表現差で誤検知
-  - 対策: 日本語記事セットで重みを再調整
-
-## 13. まず着手する実装方針 (今回の結論)
-- まずは`HeuristicDetector`のみでMVPを作る
-- 「判定して隠す」ではなく「判定して表示」から始める
-- 拡張可能な`Detector`インターフェースを先に切る
-- 検証データを最初に小さく作って、閾値を早期調整する
+## 公開リポジトリ運用ルール
+- シークレット値（APIキー、トークン、個人情報）をコミットしない。
+- 審査画面のスクリーンショットを公開する場合は個人情報をマスクする。
+- 大容量データは `data/raw/`, `data/processed/` に置き、Git管理しない。
