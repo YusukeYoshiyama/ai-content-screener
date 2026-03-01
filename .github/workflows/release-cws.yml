@@ -73,7 +73,17 @@ jobs:
             -d "grant_type=refresh_token" \
             > token_response.json
 
-          ACCESS_TOKEN="$(python3 -c 'import json; from pathlib import Path; payload=json.loads(Path(\"token_response.json\").read_text(encoding=\"utf-8\")); token=payload.get(\"access_token\"); assert token, f\"Failed to get access token: {payload}\"; print(token)')"
+          ACCESS_TOKEN="$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("token_response.json").read_text(encoding="utf-8"))
+          token = payload.get("access_token")
+          if not token:
+            raise SystemExit(f"Failed to get access token: {payload}")
+          print(token)
+          PY
+          )"
           echo "::add-mask::${ACCESS_TOKEN}"
           echo "ACCESS_TOKEN=${ACCESS_TOKEN}" >> "${GITHUB_ENV}"
 
