@@ -1,49 +1,40 @@
-# Test Dataset (500 samples)
+# Evaluation Dataset Notes
 
-## 概要
-- 目的: AI記事判定ロジックの閾値調整・評価用データを用意する
+## 位置づけ
+このリポジトリでは、単一の500件サンプルよりも、統合データセット
+`data/processed/unified_text_label.parquet` を主評価対象としている。
+
+## 500件サンプルについて
+- 生成スクリプト: `scripts/build_test_dataset.py`
 - 出力:
   - `data/processed/articles_labeled_500.jsonl`
   - `data/processed/articles_labeled_500.csv`
-- 件数: 500件 (`Human` 250 / `AI` 250)
+- 用途:
+  - 目視確認
+  - UIデバッグ
+  - スモークテスト
 
-## データソース
-- `gsingh1-py/train` (Hugging Face)
-- 入力ファイル:
-  - `data/raw/gsingh_train.parquet`
+## 全件評価について
+- 評価スクリプト: `scripts/test_detector_on_dataset.py`
+- 推奨:
+  - `--workers 10`
+  - `--model-ja` 指定
 
-## ラベル付けルール
-- `Human`: `Human_story`列
-- `AI`: モデル出力列
-  - `gemma-2-9b`
-  - `mistral-7B`
-  - `qwen-2-72B`
-  - `llama-8B`
-  - `accounts/yi-01-ai/models/yi-large`
-  - `GPT_4-o`
-- `label_confidence`: 一律 `0.98` (データセット提供ラベル準拠)
-
-## 生成コマンド
+例:
 ```bash
-python3 scripts/build_test_dataset.py --size 500 --seed 42 --min-chars 500 --max-chars 8000
+python3 scripts/test_detector_on_dataset.py \
+  --input data/processed/unified_text_label.parquet \
+  --model data/processed/hash_nb_model_4096_sampled.json \
+  --model-ja data/processed/hash_nb_model_4096_ja.json \
+  --workers 10 \
+  --output data/processed/detector_eval_hybrid_full_default.json
 ```
 
-## メタデータ項目
-- `id`
-- `label` (`AI` / `Human`)
-- `label_confidence`
-- `label_reason`
-- `source_dataset`
-- `source_row`
-- `prompt`
-- `model`
-- `original_text_length`
-- `text_length`
-- `text_hash`
-- `retrieved_at`
-- `text`
+## 判定境界
+- `0.00-0.44`: Human
+- `0.45-0.54`: Unknown
+- `0.55-1.00`: AI
 
-## 注意点
-- 本データは「WebページURL単位」ではなく、公開コーパスのテキスト単位データです。
-- 検索結果ページのUI検証には、別途URL付きデータを併用してください。
-- `text`は評価しやすい粒度に合わせて最大`8000`文字へ切り詰めています。
+## 公開リポジトリ注意事項
+- 評価結果JSONに個人情報や秘密情報を含めない。
+- 共有時は統計値中心に記載し、生テキストの再配布可否を確認する。

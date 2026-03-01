@@ -1,80 +1,49 @@
-# Dataset Collection Log
+# Dataset Collection Log (Current)
 
 ## 目的
-- AI生成判定の改善に向けて、500件を超える公開データセットを全件取得する
-- 日本語データを追加して評価/調整に使える材料を増やす
+- ローカル判定器の評価・改善に使う `text` / `label` データを統合する。
+- 日本語と英語の両方を含む評価セットを維持する。
 
-## 取得したデータセット (全件)
+## 使用データセット
 - `gsingh1-py/train`
-  - URL: https://huggingface.co/datasets/gsingh1-py/train
-  - 行数: 7,321
-  - 用途: `Human_story` vs 複数モデル出力の strong label
 - `dmitva/human_ai_generated_text`
-  - URL: https://huggingface.co/datasets/dmitva/human_ai_generated_text
-  - 行数: 1,000,000
-  - 用途: `human_text` / `ai_text` の strong label (英語)
 - `Aratako/Synthetic-Japanese-Roleplay-NSFW-gpt-5-chat-5k-formatted`
-  - URL: https://huggingface.co/datasets/Aratako/Synthetic-Japanese-Roleplay-NSFW-gpt-5-chat-5k-formatted
-  - 行数: 5,019
-  - 用途: 日本語AIテキスト (strong label)
 - `Aratako/Synthetic-Japanese-Roleplay-NSFW-Claude-4.5s-3.5k-formatted`
-  - URL: https://huggingface.co/datasets/Aratako/Synthetic-Japanese-Roleplay-NSFW-Claude-4.5s-3.5k-formatted
-  - 行数: 3,482
-  - 用途: 日本語AIテキスト (strong label)
 - `CausalLM/GPT-4-Self-Instruct-Japanese`
-  - URL: https://huggingface.co/datasets/CausalLM/GPT-4-Self-Instruct-Japanese
-  - 行数: 6,144
-  - 用途: 日本語AIテキスト (strong label)
 - `hpprc/jawiki-news-paragraphs`
-  - URL: https://huggingface.co/datasets/hpprc/jawiki-news-paragraphs
-  - 行数: 16,633
-  - 用途: 日本語Humanテキスト (weak label)
 - `hpprc/jawiki-books-paragraphs`
-  - URL: https://huggingface.co/datasets/hpprc/jawiki-books-paragraphs
-  - 行数: 186,034
-  - 用途: 日本語Humanテキスト (weak label)
 
-## 保存先
-- 生データ (parquet shards + manifest):
-  - `data/raw/<dataset-idを__置換>/`
+参照URLはHugging Face上の各データセットページ。
 
-## 統合データセット (最終)
-- `data/processed/unified_text_label.parquet`
-  - カラム: `text`, `label`
-  - 行数: `2,268,493`
-  - ラベル内訳: `Human 1,209,962 / AI 1,058,531`
-- サマリ:
-  - `data/processed/unified_text_label_summary.json`
+## 統合データ
+- 出力: `data/processed/unified_text_label.parquet`
+- カラム: `text`, `label`
+- 行数: `2,268,493`
+- ラベル内訳: `Human 1,209,962 / AI 1,058,531`
 
-## スクリプト
-- 取得:
-  - `scripts/download_hf_parquet.py`
-- 単一データセット生成 (`text`,`label`のみ):
-  - `scripts/build_unified_text_label_dataset.py`
-- 現在の判定ロジックで全件評価:
-  - `scripts/test_detector_on_dataset.py`
+## モデル成果物
+- 既定モデル: `data/processed/hash_nb_model_4096_sampled.json`
+- 日本語モデル: `data/processed/hash_nb_model_4096_ja.json`
+- 拡張同梱版:
+  - `src/content/hash-model.js`
+  - `src/content/hash-model-ja.js`
 
-## 再実行例
+## 評価スクリプト
+- `scripts/test_detector_on_dataset.py`
+- `--workers` で並列実行可能
+- `--model-ja` を指定すると日本語判定時に日本語モデルへ切替
+
+実行例:
 ```bash
-python3 scripts/download_hf_parquet.py --dataset gsingh1-py/train --out-dir data/raw
-python3 scripts/download_hf_parquet.py --dataset dmitva/human_ai_generated_text --out-dir data/raw
-python3 scripts/download_hf_parquet.py --dataset Aratako/Synthetic-Japanese-Roleplay-NSFW-gpt-5-chat-5k-formatted --out-dir data/raw
-python3 scripts/download_hf_parquet.py --dataset Aratako/Synthetic-Japanese-Roleplay-NSFW-Claude-4.5s-3.5k-formatted --out-dir data/raw
-python3 scripts/download_hf_parquet.py --dataset CausalLM/GPT-4-Self-Instruct-Japanese --out-dir data/raw
-python3 scripts/download_hf_parquet.py --dataset hpprc/jawiki-news-paragraphs --out-dir data/raw
-python3 scripts/download_hf_parquet.py --dataset hpprc/jawiki-books-paragraphs --out-dir data/raw
-
-python3 scripts/build_unified_text_label_dataset.py --min-chars 1 --max-chars 8000 --batch-size 5000
 python3 scripts/test_detector_on_dataset.py \
   --input data/processed/unified_text_label.parquet \
   --model data/processed/hash_nb_model_4096_sampled.json \
-  --human-threshold 0.45 \
-  --ai-threshold 0.55 \
-  --max-rows 0 \
+  --model-ja data/processed/hash_nb_model_4096_ja.json \
   --workers 10 \
-  --output data/processed/detector_eval_summary.json
+  --output data/processed/detector_eval_hybrid_full_default.json
 ```
 
-## 注意点
-- 日本語の `Human vs AI` が同一設計で直接対応する公開データは少ないため、日本語は「Human側weak label」と「AI側strong label」の混成です。
-- 最終評価には、あなたの対象ドメインに合わせた手動検証セットを追加するのが安全です。
+## 公開リポジトリ注意事項
+- `data/raw/`, `data/processed/` は `.gitignore` 対象。
+- 実データや生成物はリポジトリに含めない（再現手順のみを記載）。
+- データセットの利用規約・ライセンスは各配布元で確認する。

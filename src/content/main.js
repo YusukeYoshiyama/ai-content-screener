@@ -3,14 +3,19 @@
 (() => {
   const SETTINGS_KEY = "settings";
   const CACHE_PREFIX = "cache:";
+  const CACHE_VERSION = 3;
   const DEFAULT_CACHE_TTL_HOURS = 24 * 7;
   const SEARCH_SCAN_DEBOUNCE_MS = 250;
   const ANALYSIS_CONCURRENCY = 2;
+  const MIN_ANALYZABLE_TEXT_LENGTH = 180;
   const RESULT_H3_SELECTOR = "#search a h3";
   const RESULT_CONTAINER_SELECTOR = "div.MjjYud, div.g";
   const RESULT_SNIPPET_SELECTOR = ".VwiC3b, .IsZvec, .s3v9rd";
   const INLINE_CARD_BREAKPOINT = 1180;
   const CARD_CLASS = "ai-screener-card";
+  const CARD_STATE_LOADING = "loading";
+  const CARD_STATE_DONE = "done";
+  const CARD_STATE_ERROR = "error";
   const CARD_TONE_CLASSES = [
     "ai-screener-card-ai",
     "ai-screener-card-human",
@@ -18,15 +23,25 @@
     "ai-screener-card-checking",
     "ai-screener-card-error"
   ];
+  const ARTICLE_CANDIDATE_SELECTORS = [
+    "article",
+    "main",
+    "[role='main']",
+    "[itemprop='articleBody']",
+    ".post",
+    ".entry-content",
+    ".article-body"
+  ];
 
   const DEFAULT_SETTINGS = {
     enabled: true,
     cacheTTLHours: DEFAULT_CACHE_TTL_HOURS
   };
 
-  const HASH_MODEL = resolveHashModel(globalThis.AI_SCREENER_HASH_MODEL);
-  const HUMAN_SCORE_MAX = HASH_MODEL.thresholds.human_max;
-  const AI_SCORE_MIN = HASH_MODEL.thresholds.ai_min;
+  const HASH_MODEL_DEFAULT = resolveHashModel(globalThis.AI_SCREENER_HASH_MODEL);
+  const HASH_MODEL_JA = globalThis.AI_SCREENER_HASH_MODEL_JA
+    ? resolveHashModel(globalThis.AI_SCREENER_HASH_MODEL_JA)
+    : null;
 
   const analysisLimiter = createLimiter(ANALYSIS_CONCURRENCY);
   const pendingByUrl = new Map();
@@ -75,6 +90,7 @@
 
   function resolveHashModel(rawModel) {
     const fallback = {
+      name: "fallback",
       dim: 4096,
       max_chars: 1200,
       prior_logit: 0,
@@ -102,6 +118,7 @@
     const aiMin = clamp(Number(rawModel.thresholds?.ai_min) || fallback.thresholds.ai_min, 0, 1);
 
     return {
+      name: String(rawModel.name || "hash_nb_char3"),
       dim,
       max_chars: maxChars,
       prior_logit: priorLogit,
@@ -164,33 +181,45 @@
     const results = collectGoogleResults();
     for (const result of results) {
       const card = ensureResultCard(result.container);
-      if (card.dataset.url === result.url && card.dataset.state === "done") {
+      if (isCompletedCardForUrl(card, result.url)) {
         continue;
       }
 
-      card.dataset.url = result.url;
-      card.dataset.state = "loading";
-      renderResultCardChecking(card);
+      setCardLoadingState(card, result.url);
 
       analyzeResult(result)
         .then((record) => {
-          if (card.dataset.url !== result.url) {
+          if (!isCardForUrl(card, result.url)) {
             return;
           }
 
-          card.dataset.state = "done";
+          card.dataset.state = CARD_STATE_DONE;
           renderResultCard(card, record);
         })
         .catch((error) => {
           console.warn("[ai-screener] result analysis failed", error);
-          if (card.dataset.url !== result.url) {
+          if (!isCardForUrl(card, result.url)) {
             return;
           }
 
-          card.dataset.state = "error";
+          card.dataset.state = CARD_STATE_ERROR;
           renderResultCardError(card);
         });
     }
+  }
+
+  function isCompletedCardForUrl(card, url) {
+    return card.dataset.url === url && card.dataset.state === CARD_STATE_DONE;
+  }
+
+  function isCardForUrl(card, url) {
+    return card.dataset.url === url;
+  }
+
+  function setCardLoadingState(card, url) {
+    card.dataset.url = url;
+    card.dataset.state = CARD_STATE_LOADING;
+    renderResultCardChecking(card);
   }
 
   function collectGoogleResults() {
@@ -199,36 +228,43 @@
     const results = [];
 
     for (const h3 of h3Nodes) {
-      const anchor = h3.closest("a[href]");
-      if (!anchor) {
-        continue;
+      const result = buildResultFromHeading(h3, seenContainers);
+      if (result) {
+        results.push(result);
       }
-
-      const url = normalizeResultUrl(anchor.href);
-      if (!/^https?:\/\//i.test(url)) {
-        continue;
-      }
-
-      const container = anchor.closest(RESULT_CONTAINER_SELECTOR);
-      if (!container || seenContainers.has(container)) {
-        continue;
-      }
-
-      seenContainers.add(container);
-
-      const snippetNode = container.querySelector(RESULT_SNIPPET_SELECTOR);
-      const snippet = normalizeText(snippetNode ? snippetNode.innerText : "");
-      const title = normalizeText(h3.innerText || "");
-
-      results.push({
-        container,
-        url,
-        title,
-        snippet
-      });
     }
 
     return results;
+  }
+
+  function buildResultFromHeading(h3, seenContainers) {
+    const anchor = h3.closest("a[href]");
+    if (!anchor) {
+      return null;
+    }
+
+    const url = normalizeResultUrl(anchor.href);
+    if (!/^https?:\/\//i.test(url)) {
+      return null;
+    }
+
+    const container = anchor.closest(RESULT_CONTAINER_SELECTOR);
+    if (!container || seenContainers.has(container)) {
+      return null;
+    }
+
+    seenContainers.add(container);
+
+    const snippetNode = container.querySelector(RESULT_SNIPPET_SELECTOR);
+    const snippet = normalizeText(snippetNode ? snippetNode.innerText : "");
+    const title = normalizeText(h3.innerText || "");
+
+    return {
+      container,
+      url,
+      title,
+      snippet
+    };
   }
 
   async function analyzeResult(result) {
@@ -244,16 +280,8 @@
         return cached;
       }
 
-      const payload = buildPayloadFromSnippet(result);
-
-      const analyzed = analyzePayload(payload);
-      const record = {
-        ...analyzed,
-        contentHash: hashString(payload.text || ""),
-        updatedAt: Date.now(),
-        source: payload.source || "snippet"
-      };
-
+      const payload = await resolvePayloadForResult(result);
+      const record = createAnalysisRecord(payload);
       await setToStorage({ [cacheKey]: record });
       return record;
     });
@@ -266,13 +294,56 @@
     }
   }
 
+  async function resolvePayloadForResult(result) {
+    const fetched = await fetchAndExtractPayload(result.url);
+    if (shouldFallbackToSnippet(fetched)) {
+      return buildPayloadFromSnippet(result);
+    }
+    return fetched;
+  }
+
+  function shouldFallbackToSnippet(payload) {
+    return !payload.text || payload.text.length < MIN_ANALYZABLE_TEXT_LENGTH;
+  }
+
+  function createAnalysisRecord(payload) {
+    const analyzed = analyzePayload(payload);
+    return {
+      ...analyzed,
+      contentHash: hashString(payload.text || ""),
+      cacheVersion: CACHE_VERSION,
+      updatedAt: Date.now(),
+      source: payload.source || "snippet"
+    };
+  }
+
   async function getValidCache(cacheKey) {
     const cacheMap = await getFromStorage(cacheKey);
     const cached = cacheMap ? cacheMap[cacheKey] : null;
-    if (!cached || isExpired(cached.updatedAt, settings.cacheTTLHours)) {
+    if (
+      !cached ||
+      Number(cached.cacheVersion) !== CACHE_VERSION ||
+      isExpired(cached.updatedAt, settings.cacheTTLHours)
+    ) {
       return null;
     }
     return cached;
+  }
+
+  async function fetchAndExtractPayload(url) {
+    try {
+      const response = await sendMessage({
+        type: "FETCH_HTML",
+        url
+      });
+      if (!response || !response.ok || !response.html) {
+        return createEmptyPayload("fetched");
+      }
+      return extractFromHtml(response.html, response.finalUrl || url);
+    } catch (error) {
+      console.debug("[ai-screener] fetch fallback to snippet", error);
+      return createEmptyPayload("fetched");
+    }
   }
 
   function buildPayloadFromSnippet(result) {
@@ -302,8 +373,9 @@
   }
 
   function analyzePayload(payload) {
-    const score = computeHashScore(payload.text || "");
-    const judge = toJudge(score);
+    const selectedModel = selectHashModel(payload.text || payload.headingsText || "");
+    const score = computeHashScore(payload.text || "", selectedModel);
+    const judge = toJudge(score, selectedModel);
 
     return {
       score,
@@ -312,18 +384,40 @@
     };
   }
 
-  function computeHashScore(text) {
+  function selectHashModel(text) {
+    if (HASH_MODEL_JA && isLikelyJapaneseText(text)) {
+      return HASH_MODEL_JA;
+    }
+    return HASH_MODEL_DEFAULT;
+  }
+
+  function isLikelyJapaneseText(text) {
+    const sample = String(text || "").slice(0, 2400);
+    if (!sample) {
+      return false;
+    }
+
+    const matches = sample.match(/[\u3040-\u30ff\u4e00-\u9fff]/g);
+    const jpCount = matches ? matches.length : 0;
+    if (jpCount >= 40) {
+      return true;
+    }
+    return jpCount >= 8 && jpCount / Math.max(1, sample.length) >= 0.03;
+  }
+
+  function computeHashScore(text, model) {
+    const activeModel = model || HASH_MODEL_DEFAULT;
     const normalized = normalizeHashText(text);
     if (normalized.length < 3) {
       return 0.5;
     }
 
-    const limit = Math.min(normalized.length, HASH_MODEL.max_chars);
-    let logit = HASH_MODEL.prior_logit;
+    const limit = Math.min(normalized.length, activeModel.max_chars);
+    let logit = activeModel.prior_logit;
 
     for (let i = 0; i < limit - 2; i += 1) {
-      const bin = hashTrigram(normalized, i, HASH_MODEL.dim);
-      logit += HASH_MODEL.delta[bin] || 0;
+      const bin = hashTrigram(normalized, i, activeModel.dim);
+      logit += activeModel.delta[bin] || 0;
     }
 
     return sigmoid(logit);
@@ -344,11 +438,12 @@
     return h % dim;
   }
 
-  function toJudge(score) {
-    if (score < HUMAN_SCORE_MAX) {
+  function toJudge(score, model) {
+    const activeModel = model || HASH_MODEL_DEFAULT;
+    if (score < activeModel.thresholds.human_max) {
       return "Human";
     }
-    if (score < AI_SCORE_MIN) {
+    if (score < activeModel.thresholds.ai_min) {
       return "Unknown";
     }
     return "AI";
@@ -362,6 +457,103 @@
     }
     const z = Math.exp(x);
     return z / (1 + z);
+  }
+
+  function extractFromHtml(html, url) {
+    try {
+      const sanitized = sanitizeFetchedHtml(html);
+      const doc = new DOMParser().parseFromString(sanitized, "text/html");
+      return extractFromDocument(doc, url, "fetched");
+    } catch (_error) {
+      return createEmptyPayload("fetched");
+    }
+  }
+
+  function sanitizeFetchedHtml(html) {
+    return String(html || "").replace(/<base\b[^>]*>/gi, "");
+  }
+
+  function createEmptyPayload(source) {
+    return {
+      text: "",
+      headingsText: "",
+      externalLinkCount: 0,
+      source
+    };
+  }
+
+  function extractFromDocument(doc, url, source = "document") {
+    const body = doc.body;
+    if (!body) {
+      return createEmptyPayload(source);
+    }
+
+    const clone = body.cloneNode(true);
+    for (const node of clone.querySelectorAll("script,style,noscript,svg,canvas,iframe,form")) {
+      node.remove();
+    }
+    for (const node of clone.querySelectorAll("nav,footer,header,aside")) {
+      node.remove();
+    }
+
+    const mainElement = pickMainTextElement(clone);
+    const text = normalizeText(mainElement.innerText || clone.innerText || "");
+    const headingsText = Array.from(mainElement.querySelectorAll("h1,h2,h3"))
+      .map((node) => normalizeText(node.innerText || ""))
+      .filter(Boolean)
+      .join(" ");
+
+    return {
+      text,
+      headingsText,
+      externalLinkCount: countExternalLinks(mainElement, url),
+      source
+    };
+  }
+
+  function pickMainTextElement(root) {
+    let best = null;
+    let bestLength = 0;
+
+    for (const selector of ARTICLE_CANDIDATE_SELECTORS) {
+      for (const element of root.querySelectorAll(selector)) {
+        const length = normalizeText(element.innerText || "").length;
+        if (length > bestLength) {
+          best = element;
+          bestLength = length;
+        }
+      }
+    }
+
+    return best || root;
+  }
+
+  function countExternalLinks(root, pageUrl) {
+    let host = "";
+    try {
+      host = new URL(pageUrl).host;
+    } catch (_error) {
+      host = "";
+    }
+
+    let count = 0;
+    for (const anchor of root.querySelectorAll("a[href]")) {
+      const href = anchor.getAttribute("href");
+      if (!href || !/^https?:\/\//i.test(href)) {
+        continue;
+      }
+
+      try {
+        const linked = new URL(href);
+        if (!host || linked.host !== host) {
+          count += 1;
+        }
+      } catch (_error) {
+        continue;
+      }
+    }
+
+    return count;
   }
 
   function ensureResultCard(container) {
@@ -396,13 +588,7 @@
   }
 
   function renderResultCard(card, record) {
-    let tone = "unknown";
-    if (record.judge === "AI") {
-      tone = "ai";
-    } else if (record.judge === "Human") {
-      tone = "human";
-    }
-
+    const tone = judgeToTone(record.judge);
     setResultCardTone(card, tone);
     card.innerHTML = createResultCardMarkup(record.displayScore, record.judge);
     card.title = `Score: ${record.displayScore} / Judge: ${record.judge}`;
@@ -417,6 +603,16 @@
   function setResultCardTone(card, tone) {
     card.classList.remove(...CARD_TONE_CLASSES);
     card.classList.add(`ai-screener-card-${tone}`);
+  }
+
+  function judgeToTone(judge) {
+    if (judge === "AI") {
+      return "ai";
+    }
+    if (judge === "Human") {
+      return "human";
+    }
+    return "unknown";
   }
 
   function createResultCardMarkup(displayScore, judge) {
@@ -704,41 +900,35 @@
     return ((channel + 0.055) / 1.055) ** 2.4;
   }
 
+  async function sendMessage(message) {
+    return callChromeApi((callback) => chrome.runtime.sendMessage(message, callback));
+  }
+
   function getFromStorage(key) {
+    return callChromeApi((callback) => chrome.storage.local.get(key, callback));
+  }
+
+  function setToStorage(items) {
+    return callChromeApi((callback) => {
+      chrome.storage.local.set(items, () => callback());
+    });
+  }
+
+  function removeFromStorage(keys) {
+    return callChromeApi((callback) => {
+      chrome.storage.local.remove(keys, () => callback());
+    });
+  }
+
+  function callChromeApi(executor) {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get(key, (value) => {
+      executor((value) => {
         const error = chrome.runtime.lastError;
         if (error) {
           reject(new Error(error.message));
           return;
         }
         resolve(value);
-      });
-    });
-  }
-
-  function setToStorage(items) {
-    return new Promise((resolve, reject) => {
-      chrome.storage.local.set(items, () => {
-        const error = chrome.runtime.lastError;
-        if (error) {
-          reject(new Error(error.message));
-          return;
-        }
-        resolve();
-      });
-    });
-  }
-
-  function removeFromStorage(keys) {
-    return new Promise((resolve, reject) => {
-      chrome.storage.local.remove(keys, () => {
-        const error = chrome.runtime.lastError;
-        if (error) {
-          reject(new Error(error.message));
-          return;
-        }
-        resolve();
       });
     });
   }
