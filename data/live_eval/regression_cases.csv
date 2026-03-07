@@ -1,0 +1,3 @@
+query,url,lang,domain_type,label,label_confidence,label_reason,last_verified_hash
+ポケモン30周年,https://www.pokemon.co.jp/30th/,ja,official,Human,0.99,regression-human,0469ac2da3acd9e1b94ed4d873e48b53a1b656c128e673063a818c22d128ea83
+ポケモン30周年,https://www.pokemoncenter-online.com/feature/30th.html,ja,ec,Human,0.99,regression-human,4f5a6c00ce50da85f925e4237bd35218a217adce2c2efda3c9b74c6dccee704a

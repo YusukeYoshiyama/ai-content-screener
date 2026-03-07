@@ -56,6 +56,36 @@ python3 scripts/data_tools.py build-unified
 python3 scripts/data_tools.py evaluate --model data/processed/hash_nb_model_4096_sampled.json --model-ja data/processed/hash_nb_model_4096_ja.json
 ```
 
+ライブURLの検証:
+
+```bash
+python3 scripts/data_tools.py verify-live --input data/live_eval/web_human.csv --write-manifest
+```
+
+ライブURLマニフェスト生成:
+
+```bash
+python3 scripts/data_tools.py collect-live-seed --spec /tmp/live_specs.json --output data/live_eval/web_human.csv
+```
+
+ライブURL評価:
+
+```bash
+python3 scripts/data_tools.py evaluate-live --input data/live_eval/web_human.csv --model data/processed/hybrid_hash_nb_model_4096_sampled.json --model-ja data/processed/hybrid_hash_nb_model_4096_ja.json
+```
+
+live suite 評価:
+
+```bash
+python3 scripts/data_tools.py evaluate-live-suite --model data/processed/hybrid_hash_nb_model_4096_sampled.json --model-ja data/processed/hybrid_hash_nb_model_4096_ja.json
+```
+
+軽量ハイブリッドモデル再学習:
+
+```bash
+python3 scripts/data_tools.py train-hybrid --live-human-manifest data/live_eval/web_human.csv --live-ai-page-manifest data/live_eval/web_ai_page.csv --live-ai-site-manifest data/live_eval/web_ai_site.csv --serp-audit-manifest data/live_eval/serp_audit.csv --regression-manifest data/live_eval/regression_cases.csv
+```
+
 ## Store Assets
 
 Chrome Web Store の掲載情報は `store/` 配下で Git 管理します。
@@ -64,3 +94,16 @@ Chrome Web Store の掲載情報は `store/` 配下で Git 管理します。
 - `store/screenshots/`: スクリーンショット
 
 反映自体は Developer Dashboard で手動対応します。
+
+## Live Eval
+
+実サイト評価用の URL マニフェストは `data/live_eval/` 配下で管理します。
+
+- `web_human.csv`: `400` 件の Human 回帰セット
+  - うち `80` 件は AI関連の hard negative
+- `web_ai_page.csv`: `200` 件の page-level 明示 AI セット
+- `web_ai_site.csv`: `100` 件の site-level AI セット
+- `serp_audit.csv`: `30` クエリ x `10` 件、計 `300` 件の検索監査セット
+- `regression_cases.csv`: 既知の誤判定回帰ケース
+
+取得した HTML や本文キャッシュは `data/live_cache/` に保存し、Git には含めません。

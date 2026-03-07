@@ -39,6 +39,8 @@ temp/
 # Local datasets and generated evaluation outputs
 data/raw/
 data/processed/
+data/live_cache/
+data/live_eval/*.json
 
 # Personal notes
 docs/
