@@ -48,8 +48,8 @@ jobs:
 
       - name: Build extension zip artifact
         run: |
-          chmod +x scripts/build_extension_zip.sh
-          scripts/build_extension_zip.sh "dist/ai-content-screener-${GITHUB_SHA::7}.zip"
+          chmod +x scripts/release.sh
+          scripts/release.sh build-zip "dist/ai-content-screener-${GITHUB_SHA::7}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
