@@ -55,9 +55,9 @@ jobs:
 
       - name: Build extension zip
         run: |
-          chmod +x scripts/build_extension_zip.sh
+          chmod +x scripts/release.sh
           ZIP_PATH="dist/ai-content-screener-${GITHUB_REF_NAME}.zip"
-          scripts/build_extension_zip.sh "${ZIP_PATH}"
+          scripts/release.sh build-zip "${ZIP_PATH}"
           echo "ZIP_PATH=${ZIP_PATH}" >> "${GITHUB_ENV}"
 
       - name: Get OAuth access token

@@ -1,0 +1,301 @@
+query,url,lang,domain_type,label,label_confidence,label_reason,last_verified_hash
+ポケモン30周年,https://www.pokemon.co.jp/30th/,ja,official,Human,0.99,regression-human,0469ac2da3acd9e1b94ed4d873e48b53a1b656c128e673063a818c22d128ea83
+ポケモン30周年,https://www.pokemoncenter-online.com/feature/30th.html,ja,ec,Human,0.99,regression-human,4f5a6c00ce50da85f925e4237bd35218a217adce2c2efda3c9b74c6dccee704a
+ポケモン30周年,https://www.pokemon.co.jp/,ja,official,Human,0.98,official-site,995dcf5ad83522560f60c9df71bcf024891b02958d5ec11449927333f9af5d8d
+ポケモン30周年,https://www.pokemon.co.jp/30th/summary/,ja,official,Human,0.98,official-site,6487f8df46281dd931f402828d6c462a8f95092d322e88776d1c04b5e9bbd301
+ポケモン30周年,https://novelistai.com/story/the-inquisitor-s-shadow,en,blog,AI,0.98,page-explicit-disclosure,27ce337b02803e9ffb84b44d4f9ac6af65fb9bef1ede7fb755d099c291c38b36
+ポケモン30周年,https://novelistai.com/story/shadows-of-the-black-blizzard,en,blog,AI,0.98,page-explicit-disclosure,f913e0ac93b1b3d746e5765ea6d759ef3e93d0dd856cc67c4f1dfc31cc56a7d7
+ポケモン30周年,https://novelistai.com/story/ebb-and-flow-of-the-cosmic-heart,en,blog,AI,0.98,page-explicit-disclosure,97b9107e33d2f30c797f12e354e8383b7a8987fa4cf0249484983b581c121cad
+ポケモン30周年,https://www.aiweirdness.com/the-ais-carol-19-12-24/,en,blog,AI,0.95,site-ai-domain,58ac848519204be9297127b3cb14a5684bb52c740dcafdac6f74348f174d9ce8
+ポケモン30周年,https://www.aiweirdness.com/halloween-costumes-by-tiny-neural-net/,en,blog,AI,0.95,site-ai-domain,b34a037600c2ef65a4f835cf3912704ea7178dc51dd9cedb493815a37e37fbee
+ポケモン30周年,https://www.pokemon.co.jp/app/,ja,official,Human,0.98,official-site,bc2a77cf163428c617fba1e8b1ff758635805251185f05a5c66ab4846f7e8798
+ポケモンセンター グッズ,https://www.pokemoncenter-online.com/,ja,ec,Human,0.99,official-site,ff3c680ccc6410189533d709a4a14dd272640f112c21b9c18ad3a20448218187
+ポケモンセンター グッズ,https://www.pokemon.co.jp/,ja,official,Human,0.99,official-site,995dcf5ad83522560f60c9df71bcf024891b02958d5ec11449927333f9af5d8d
+ポケモンセンター グッズ,https://www.pokemon.co.jp/card/,ja,official,Human,0.98,official-site,e163d15751e30a1c149a7281b480cf173771b4803ec942e7ba36e6670c12c389
+ポケモンセンター グッズ,https://www.pokemon.co.jp/cf/,ja,official,Human,0.98,official-site,4e966bbd328761af1c3f31e9ec7a10bdfbbaf14a3f1ca685f4537a73c1bdd799
+ポケモンセンター グッズ,https://novelistai.com/story/veins-of-velvet-night,en,blog,AI,0.98,page-explicit-disclosure,c5fef8bf6527dea9aada4279495d9799e27b8820c2be684025377b744b013cf9
+ポケモンセンター グッズ,https://novelistai.com/story/gears-of-shadow,en,blog,AI,0.98,page-explicit-disclosure,54f797a15dbeac9f8bd44971f27ded48621e138869d68fb40a30b15f1749bfe6
+ポケモンセンター グッズ,https://novelistai.com/story/sammy-the-sloppy-squirrel-s-nutty-mix-up,en,blog,AI,0.98,page-explicit-disclosure,c2711bb629a868f2bd7cc142c5b6a87e790c8c5a2ef9ff89519bda49e5f2cb07
+ポケモンセンター グッズ,https://www.aiweirdness.com/christmas-carols-generated-by-a-neural-17-12-20/,en,blog,AI,0.95,site-ai-domain,d8b41052bb883d06daf3d6af4115fdb11984aa63af0b46138b7015fe74d07c4e
+ポケモンセンター グッズ,https://www.aiweirdness.com/when-a-chatbot-runs-your-store/,en,blog,AI,0.95,site-ai-domain,fa040a06e2bba5b2c9fac764c2a04ffc8fc5e7a83c51fd937f785847deb8ef7a
+ポケモンセンター グッズ,https://www.pokemon.co.jp/ex/1000pokemon/,ja,official,Human,0.98,official-site,f85431ad3095b789b68a030cf23b6660b745f56e4d780926d6df31a4c14a1bfc
+sony camera feature,https://www.pokemon.co.jp/ex/1000pokemon/download/,ja,official,Human,0.99,official-site,d77997fd42369f6f70f399f76ccbe3f5e5d1077d5801baad87e4f6e2ef2a979b
+sony camera feature,https://www.pokemon.co.jp/ex/1000pokemon/present/,ja,official,Human,0.99,official-site,cce608c3dfb806bced32c7f22a14b4823f2d7f7c6680404fa6784e7fa4b615b0
+sony camera feature,https://www.pokemon.co.jp/ex/1000pokemon/story/,ja,official,Human,0.98,official-site,e3034cfc73b14ca640238b14a61c2ee255cc7b3e1b4551d0715971de6b8c77db
+sony camera feature,https://www.pokemon.co.jp/ex/30th_logo/,ja,official,Human,0.98,official-site,bf558337bf7bc25ed65cefcec42971bb1d03755db69be42c0c924bb5d4c82c75
+sony camera feature,https://novelistai.com/story/the-carbon-silence,en,blog,AI,0.98,page-explicit-disclosure,4ba4dca9aaa1e2d76d3d29aa9ef963fdbf917336c95433535f94e4bb9e86ab72
+sony camera feature,https://novelistai.com/story/neural-harvest-2,en,blog,AI,0.98,page-explicit-disclosure,453978bb8a52e2b81b9fec8c35ecaa19a8b528c3f90f68bbbed39fbbb769745c
+sony camera feature,https://novelistai.com/story/beneath-the-velvet-sky-4,en,blog,AI,0.98,page-explicit-disclosure,31fb34a1d4841387f4544b208e233f7885d96a6b7136ef7a6d0a55a13551e87e
+sony camera feature,https://www.aiweirdness.com/tiny-neural-net-halloween-costumes-are-the-best/,en,blog,AI,0.95,site-ai-domain,8ee5dc898591cfa6023683fa1d75d9b8520d4674b0aa119460d40037d308e25d
+sony camera feature,https://www.aiweirdness.com/tiny-jello/,en,blog,AI,0.95,site-ai-domain,8a578c270bced140f7cd2d9a7137f7f86d7ad6a8ab20f79bd5698dadf7d2c569
+sony camera feature,https://www.pokemon.co.jp/ex/3dzukanbw/,ja,official,Human,0.98,official-site,26d300dbbf3e4226ebae6c35a2538b8e83e60912484d85a890407cec9e252726
+macbook air specs,https://www.pokemon.co.jp/ex/3dzukanbw/armarker/,ja,official,Human,0.99,official-site,b615c19441e9462fb8254ea3aa4f4c47bf38f8b9b0f8071f385e9df3d8b95af8
+macbook air specs,https://nextjs.org/docs/app,en,docs,Human,0.99,docs-site,996adb5930679a289767bbf15bf594303a58f82d863b8034579ff278126e71c5
+macbook air specs,https://nextjs.org/docs/app/api-reference,en,docs,Human,0.98,docs-site,17125bafefa71fa53f1c344a847e2a5fcfc1dd653c2fe522546212cab2f6c74f
+macbook air specs,https://nextjs.org/docs/app/api-reference/cli,en,docs,Human,0.98,docs-site,dc834eb4a985e434cf6d2be9105baaeac17003c205b03a08b71ab31dbe46b3f3
+macbook air specs,https://novelistai.com/story/jaxon-and-sookie-s-pocket-adventures,en,blog,AI,0.98,page-explicit-disclosure,6435a8229b28a6c85ed69685f7136e2324da58a16bde6b4231da5c97de94c08b
+macbook air specs,https://novelistai.com/story/throne-of-thorns-heart-of-iron,en,blog,AI,0.98,page-explicit-disclosure,980a65ce7777f1825b26975151468f5f874266f695b53bcb702d4e6168aae16f
+macbook air specs,https://novelistai.com/story/shadows-of-submission-3,en,blog,AI,0.98,page-explicit-disclosure,ee8bcb1960db33305fef41a3095875bf9c4976da87fb742afc2903ff63976b90
+macbook air specs,https://www.aiweirdness.com/bonus-more-halloween-costumes-from-tiny-neural-net/,en,blog,AI,0.95,site-ai-domain,ede3df4f3c00a04be182514557e0ade67fe82dfa0271fb2e12698db29440069e
+macbook air specs,https://www.aiweirdness.com/incorrect-christmas-carols/,en,blog,AI,0.95,site-ai-domain,5e9ba13343192d4ead8e3c6fb2a41a657d998051cd8d46de8f706efa65ea69e3
+macbook air specs,https://nextjs.org/docs/app/api-reference/cli/create-next-app,en,docs,Human,0.98,docs-site,062a12d7d84bbe2cf56ec8af97f7c4e88df89828f2cbb58b0cda9eb1027b923b
+iphone support,https://www.pokemon.co.jp/ex/3dzukanbw/campaign/,ja,official,Human,0.99,official-site,fd20650d300513f1623b34a40a873b4912c909ba58ec3e8184c38ca07907598b
+iphone support,https://nextjs.org/docs/app/api-reference/cli/next,en,docs,Human,0.99,docs-site,123dadf9bfdcf4f89a45d49ff3531a7bc5ce3d19624be074225021ee00465549
+iphone support,https://nextjs.org/docs/app/api-reference/components,en,docs,Human,0.98,docs-site,728b288247c6e9f4c462449f31a41ded6eed67d0a2863c32d11a6a77d103c7ad
+iphone support,https://nextjs.org/docs/app/api-reference/components/font,en,docs,Human,0.98,docs-site,1ac2ac448173a208fa0f8bd9fe8be4c585f13a736290397b63512a8ecf41b89b
+iphone support,https://novelistai.com/story/harvest-of-shadows-12,en,blog,AI,0.98,page-explicit-disclosure,a886c5fe7127484a17c6701d939e22f8fa5545b2781644619a35c05d10368bf2
+iphone support,https://novelistai.com/story/steel-harvest,en,blog,AI,0.98,page-explicit-disclosure,2a69b2bda068978e54f594848ee553156aa79076623d87241e64054397f702cf
+iphone support,https://novelistai.com/story/crimson-submission,en,blog,AI,0.98,page-explicit-disclosure,9ba4a7cbaf8b4a2d2c90a913903bd40f08b3a3364db3e72f56a373c35fb7c2e9
+iphone support,https://www.aiweirdness.com/more-tiny-neural-net-costumes/,en,blog,AI,0.95,site-ai-domain,398206cf1bf85ba26f5940e4665c3fded9653598feb0c39c4530c05da2cd4db9
+iphone support,https://www.aiweirdness.com/bonus-char-rnns-jello-creations/,en,blog,AI,0.95,site-ai-domain,3df6462e96d4ab3a9d97954a647ba0c1ec9431a07f397364a65269c3b0583fd9
+iphone support,https://nextjs.org/docs/app/api-reference/components/form,en,docs,Human,0.98,docs-site,23a6e80650f1f36316ba0ca8000d0eaba5b615ee2bb90dbe150588d8e838171a
+nextjs server actions,https://www.pokemon.co.jp/ex/3dzukanbw/collect/,ja,official,Human,0.99,official-site,11ebcf2d587f95783185df8028d603506db7938a2847a028a4b236c80d5da475
+nextjs server actions,https://nextjs.org/docs/app/api-reference/components/image,en,docs,Human,0.99,docs-site,cbe3c18817f9cb29f64e2869de8edbb82f810d9ce496748b4765af09c664b7ec
+nextjs server actions,https://nextjs.org/docs/app/api-reference/components/link,en,docs,Human,0.98,docs-site,fa8afee976fbda6c308c0a47a17eb1416fe26db174923cb1ad234df78aeb05da
+nextjs server actions,https://nextjs.org/docs/app/api-reference/components/script,en,docs,Human,0.98,docs-site,0f49e7598c0795244fafaadd1f39311dabaf1f56f49ca529bdb9ad6387dcdd8e
+nextjs server actions,https://novelistai.com/story/ledger-of-quiet-hands,en,blog,AI,0.98,page-explicit-disclosure,72b2b7d6ec0b58ec144030452dce48c747c66306218fe3957f2f1deb0e66a126
+nextjs server actions,https://novelistai.com/story/whispers-in-the-velvet-dark,en,blog,AI,0.98,page-explicit-disclosure,166c2d7214c71d9df1581dc829e10b45b46c95351b4a610c892b8e7ab7203f9d
+nextjs server actions,https://novelistai.com/story/unconditional-ways-to-make-money-in-transportation-warehousing,en,blog,AI,0.98,page-explicit-disclosure,228f1c612d9d24c0694ab93aae143be6730ac6eb6f30948b4fd8beff9dd8cc16
+nextjs server actions,https://www.aiweirdness.com/troubleshooting-the-warp-confabulator/,en,blog,AI,0.95,site-ai-domain,ca3e2a7ace13ac128ed8a2b8d7c881124488bc546238e196d95437d400876fb4
+nextjs server actions,https://www.aiweirdness.com/ai-vintage-american-cooking-a-combination-20-02-08/,en,blog,AI,0.95,site-ai-domain,ba3c1b4f4228f5b37c711f94ebd20295af21e985995f30c8025c0618438b4159
+nextjs server actions,https://nextjs.org/docs/app/api-reference/config,en,docs,Human,0.98,docs-site,ce8e19d9d36ccc712155275df951b6e19846f652dc2adee2dfd1e18403c2b4aa
+nextjs caching docs,https://www.pokemon.co.jp/ex/3dzukanbw/complete/,ja,official,Human,0.99,official-site,89b8f06f6c62ee084be21809392a77ea29bb5eb4d9529fb93f597d6840fdafa4
+nextjs caching docs,https://nextjs.org/docs/app/api-reference/config/eslint,en,docs,Human,0.99,docs-site,1a858207403dfd47f334965eef67cfb04b567a7ca42f83bd7483528f74830c25
+nextjs caching docs,https://nextjs.org/docs/app/api-reference/config/next-config-js,en,docs,Human,0.98,docs-site,dc1d3682b911dff6453cb660397bffd9d35cf5845ae4575c00be2881f744dc62
+nextjs caching docs,https://nextjs.org/docs/app/api-reference/config/next-config-js/adapterPath,en,docs,Human,0.98,docs-site,bb2b87ea7015526afdcb508544fa660cda171b3f8dd543efc646f832d527dab2
+nextjs caching docs,https://novelistai.com/story/veins-of-saffron-2,en,blog,AI,0.98,page-explicit-disclosure,320172d08163ac676c1e830ef54b5f47fe75c47ed002ae608986fcefaad5984a
+nextjs caching docs,https://novelistai.com/story/whispers-from-the-marrow-9,en,blog,AI,0.98,page-explicit-disclosure,feaa63a8b0c3a5ad77826782e7ee4a53c667246b9fd474b30e47cda1dc7b0f5c
+nextjs caching docs,https://novelistai.com/story/zara-and-the-whispering-stars,en,blog,AI,0.98,page-explicit-disclosure,e307734bfeee34129f3c22d9f8e0e650d6575a46d24db8b7296925776a364558
+nextjs caching docs,https://www.aiweirdness.com/chatgpt-will-apologize-for-anything/,en,blog,AI,0.95,site-ai-domain,e5346d3d94b05c55a12be900176579467ab57fc5d69bab551531b283101542b5
+nextjs caching docs,https://www.aiweirdness.com/hidden-3d-pictures/,en,blog,AI,0.95,site-ai-domain,44da113480834d5591b0b44e67096797d7a4d27637d305eaea23113cfc5dacbd
+nextjs caching docs,https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins,en,docs,Human,0.98,docs-site,cac7f0ef5c7c5a0999634b1b92cc646c022381c8a4e1257868885761171dbcd8
+vue composition api docs,https://www.pokemon.co.jp/ex/3dzukanbw/enjoying/,ja,official,Human,0.99,official-site,964cdf097dcf1776ede295ca17190b8e412e244ef6b8eff7ba1016f2c9a0068b
+vue composition api docs,https://nextjs.org/docs/app/api-reference/config/next-config-js/appDir,en,docs,Human,0.99,docs-site,e586bfc0830047fb433a69d94edb9dcd82fafcf94225fd250efa656d1b795b72
+vue composition api docs,https://nextjs.org/docs/app/api-reference/config/next-config-js/assetPrefix,en,docs,Human,0.98,docs-site,88edc2ae5f89a15731fe41638a637942651db307137c92133264edcb277d1640
+vue composition api docs,https://nextjs.org/docs/app/api-reference/config/next-config-js/authInterrupts,en,docs,Human,0.98,docs-site,70129cd1808163d30ee51c66146f905e20f2f01f27f6c4085d7b174a0159ed0d
+vue composition api docs,https://novelistai.com/story/echoes-in-the-veil,en,blog,AI,0.98,page-explicit-disclosure,5b85b18987502944bc36fee22394dbb5b25c460ae0e8bd81784459717bb38831
+vue composition api docs,https://novelistai.com/story/veins-of-empire-3,en,blog,AI,0.98,page-explicit-disclosure,7cfafdf90f9ef70bcd45ca844fbbc66972fbaa8a3da6042cb1d6e82a788f9594
+vue composition api docs,https://novelistai.com/story/lila-s-lantern-light,en,blog,AI,0.98,page-explicit-disclosure,bfa0bd3068313f3e29c48138329335ef7d14c2f696dc03997b4cfc2619c16f5a
+vue composition api docs,https://www.aiweirdness.com/ignore-all-previous-instructions-2/,en,blog,AI,0.95,site-ai-domain,db9cc39c5a556f14446bcd5812a8f127ffba62ddcf40044b3349833382f7992a
+vue composition api docs,https://www.aiweirdness.com/bonus-in-which-the-adventurer-attempts-to-build-a-website/,en,blog,AI,0.95,site-ai-domain,48bf235ae1938fa41d17d66dc93e542aabee4d330bdcb98be353ac90e70f27c1
+vue composition api docs,https://nextjs.org/docs/app/api-reference/config/next-config-js/basePath,en,docs,Human,0.98,docs-site,5966ccbe6bde866cab5770ed1f55423279f511d253f854a631f1194bed2a2f60
+nintendo switch support,https://www.pokemon.co.jp/ex/3dzukanbw/getmarker/album/,ja,official,Human,0.99,official-site,ae90ed1753a8c3d601d3be643aedf7209c5619c2f2803fac38cb856e76c3efe2
+nintendo switch support,https://nextjs.org/docs/app/api-reference/config/next-config-js/browserDebugInfoInTerminal,en,docs,Human,0.99,docs-site,14bbc9aa1dadc18c733e6921b7f7f6928163e0abba368302b36c4535daeb937c
+nintendo switch support,https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents,en,docs,Human,0.98,docs-site,564a003f93652e58db0b7d3cb440167190308c3184dd3ec12b01c27d4ab18689
+nintendo switch support,https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheHandlers,en,docs,Human,0.98,docs-site,8a6885ee74fe012997511980fc820d2216d5946c4648831cf1d7c8e3d74cc001
+nintendo switch support,https://novelistai.com/story/echoes-of-the-manifest,en,blog,AI,0.98,page-explicit-disclosure,06ad747f55dc5778b012e16ef7930c51019dd6c7621bb26f0a83ca6087f8f1ca
+nintendo switch support,https://novelistai.com/story/the-taxonomy-of-hunger,en,blog,AI,0.98,page-explicit-disclosure,465347c4727f4aa10c7c0d6e163e49e3c321a7b893a0caae6fe4f2597daaeeeb
+nintendo switch support,https://novelistai.com/story/the-map-that-wouldn-t-stay-still,en,blog,AI,0.98,page-explicit-disclosure,ea56da391a2020fe52f81c123b1a28f30cfa2624cd8f0d6e4df624848ae1e2dd
+nintendo switch support,https://www.aiweirdness.com/learn-your-farm-animals-with-ai/,en,blog,AI,0.95,site-ai-domain,5e51cc8cfbc6603ac125867329d1ab48fb155607ba33d99c0ba4190554580371
+nintendo switch support,https://www.aiweirdness.com/bonus-a-unicorn-goes-downhill/,en,blog,AI,0.95,site-ai-domain,ceec778c70cd0cbb02a294a4ed9339cd9e50157b407ec6702e1c9c387bd81fd7
+nintendo switch support,https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheLife,en,docs,Human,0.98,docs-site,5387203d09cbfbe891f9c4bd85d9a1c125816f876415e885b623e8e01703e3d9
+apple airpods specs,https://www.pokemon.co.jp/ex/3dzukanbw/photo/,ja,official,Human,0.99,official-site,14536d01c60950158420fb0a5c414ea4ad3683970634306b8abf65fe63b4eabc
+apple airpods specs,https://nextjs.org/docs/app/api-reference/config/next-config-js/compress,en,docs,Human,0.99,docs-site,260ba455227dce76b854dd7d8e9d6b9feaaa8e5623e5707a739f3f3793efe29e
+apple airpods specs,https://nextjs.org/docs/app/api-reference/config/next-config-js/crossOrigin,en,docs,Human,0.98,docs-site,a2654e32399a0aa00334817352c3ec52e6d6a3be6e0c861afa5a1eb2c5c0b257
+apple airpods specs,https://nextjs.org/docs/app/api-reference/config/next-config-js/cssChunking,en,docs,Human,0.98,docs-site,36f2a533b7c5b689a3ee9423f51a56a1428fb9a7478cebe5a5f5a8e929754fa5
+apple airpods specs,https://novelistai.com/story/the-elevator-that-skipped-the-lobby,en,blog,AI,0.98,page-explicit-disclosure,a7bec78fa507be148b2471b82d1af29595d033eb84d8419af4b2b20863ea90b7
+apple airpods specs,https://novelistai.com/story/the-shadow-beneath-the-palace,en,blog,AI,0.98,page-explicit-disclosure,d6cd51677aff4385fc5c40671d2a1dd433bc7195d8b35bde5526df9ffca63b51
+apple airpods specs,https://novelistai.com/story/neon-reckoning-3,en,blog,AI,0.98,page-explicit-disclosure,6a784ac4bbb0f0ab738bdf1e19a1a88df56f0e81fe783bcf6d4589f2ce4cb9f6
+apple airpods specs,https://www.aiweirdness.com/hidden-sheep/,en,blog,AI,0.95,site-ai-domain,caffa0a2e7c1e14f93fb7346ff6a5f7b299acf4ced1eb9c957dca0e5935b8532
+apple airpods specs,https://www.aiweirdness.com/bonus-more-dall-e3-candy-hearts/,en,blog,AI,0.95,site-ai-domain,255cf3d6726ed66c542bd0b199f31f1195ab31387547469d2f6974e7e28cb822
+apple airpods specs,https://nextjs.org/docs/app/api-reference/config/next-config-js/deploymentId,en,docs,Human,0.98,docs-site,3c423abe95a6ac6c53d6307ebbe1af84ea9ef9b9dcba4ad085442c2033ba0e34
+claude code best practices,https://ai-sdk.dev/cookbook/api-servers/express,en,docs,Human,0.99,hard-negative-ai-topic,41c0f59f0e91a524fac92c7b4d3fe06f43d2ce92784dc1962f1f887487a2f927
+claude code best practices,https://ai-sdk.dev/cookbook/api-servers/fastify,en,docs,Human,0.99,hard-negative-ai-topic,4b9850a69f99854914b6303220c390d32f4cb66c81194e43db598eb100954126
+claude code best practices,https://nextjs.org/docs/app/api-reference/config/next-config-js/devIndicators,en,docs,Human,0.98,docs-site,9bfa9af29264542acd8ce9be74aeab05d2aead66f6fff47ac78ae9e0eeab7964
+claude code best practices,https://nextjs.org/docs/app/api-reference/config/next-config-js/distDir,en,docs,Human,0.98,docs-site,e3aedb45dc03e31f1702be57fd03924b1337d1bf2ded1cc5d199a816e7a62e49
+claude code best practices,https://novelistai.com/story/the-sky-below-the-world,en,blog,AI,0.98,page-explicit-disclosure,c9f2aa8e83d696eb38199c68ba3071887c1b44b9d14cb17343d1b041e389a0b1
+claude code best practices,https://novelistai.com/story/the-ledger-of-quiet-orchard,en,blog,AI,0.98,page-explicit-disclosure,5002fe8efe3556335caa4d30abbac355319df7d77af51e889f130a0dc27b6815
+claude code best practices,https://novelistai.com/story/the-crimson-garden,en,blog,AI,0.98,page-explicit-disclosure,e143509732a7ce62e942c572d3b8ec218987444748047f6dc634574bc9c460b7
+claude code best practices,https://www.aiweirdness.com/bonus-more-shape-shaped-shapes/,en,blog,AI,0.95,site-ai-domain,287f6ddeb2ccf6835bb3064aa3bcdff1f5a77b42ba7436abab8b79f224932a53
+claude code best practices,https://www.aiweirdness.com/bonus-more-farm-animals/,en,blog,AI,0.95,site-ai-domain,9ba4f36c0f962d465413e00621059cf98d8bcf03f83ef906598bd21d78589e1d
+claude code best practices,https://nextjs.org/docs/app/api-reference/config/next-config-js/env,en,docs,Human,0.98,docs-site,414dda442400e92adba429ba7afcb8e9498cd9df8612fc13b416402f1e16b502
+anthropic safety research,https://ai-sdk.dev/cookbook/api-servers/hono,en,docs,Human,0.99,hard-negative-ai-topic,7767e116a5c3c24ee5a0e8cd8c7508cbbc2052d5fd00e9457bfd603f74f6fb5c
+anthropic safety research,https://ai-sdk.dev/cookbook/api-servers/nest,en,docs,Human,0.99,hard-negative-ai-topic,ab718c26c56a6469563edde5aa2a9d981d98baa423479a8b0094ffe06f92e512
+anthropic safety research,https://nextjs.org/docs/app/api-reference/config/next-config-js/expireTime,en,docs,Human,0.98,docs-site,b0c5b649a9b3277695acc501f5768ce1b597efa2d17ef8c30ea21a6c7179cf47
+anthropic safety research,https://nextjs.org/docs/app/api-reference/config/next-config-js/exportPathMap,en,docs,Human,0.98,docs-site,bfd1a18c423ffaa455abd97326b80ffd86bc181e1b03e16dd00c3fabefa7b328
+anthropic safety research,https://novelistai.com/story/echoes-of-the-forbidden-spire,en,blog,AI,0.98,page-explicit-disclosure,a6a4fa782ff1f9d3b3cf4fd5e4d0f91e1aa2a1099afcbc90f8714b4ffbf286df
+anthropic safety research,https://novelistai.com/story/tommy-s-globe-trotting-adventures,en,blog,AI,0.98,page-explicit-disclosure,b3511aab40627a9cfd707bdffb45ffcc8aecec704dafe4bb438192c06d5d9a53
+anthropic safety research,https://novelistai.com/story/the-great-sock-rebellion-2,en,blog,AI,0.98,page-explicit-disclosure,65128e0b726a36d78340f692043e0fc12c128684dccf6e9a12cbacfdaaa91ee7
+anthropic safety research,https://www.aiweirdness.com/bonus-more-flightless-birds/,en,blog,AI,0.95,site-ai-domain,4f7468905b225ac122531cf4c07fc9cd22e41755712ccafb51e2ab73bb178e41
+anthropic safety research,https://www.aiweirdness.com/candy-heart-messages-written-by-a-18-02-09/,en,blog,AI,0.95,site-ai-domain,f665af95d8ab209864e360eef08b362bd65f66a600862a20dd921c117547dd71
+anthropic safety research,https://nextjs.org/docs/app/api-reference/config/next-config-js/generateBuildId,en,docs,Human,0.98,docs-site,393c9e9fb6ff4e8249cd2933ba9882d25ebdb5d08b5e90aa09fe203650c70067
+gemini app features,https://ai-sdk.dev/cookbook/api-servers/node-http-server,en,docs,Human,0.99,hard-negative-ai-topic,87d78703895a98bd52303c7f97f2de1d9ba51c03a9171e5f0ed4ec253ce578a7
+gemini app features,https://ai-sdk.dev/cookbook/guides,en,docs,Human,0.99,hard-negative-ai-topic,c6769e67fe7542d7d5c75fd4689ac8c237a5bcac13d3d60d6819462648570637
+gemini app features,https://nextjs.org/docs/app/api-reference/config/next-config-js/generateEtags,en,docs,Human,0.98,docs-site,aadce9bda9c7bc6a050366b70988b787acb26e973626be3421eaa8a2ba000de8
+gemini app features,https://nextjs.org/docs/app/api-reference/config/next-config-js/headers,en,docs,Human,0.98,docs-site,9338774f0f05618a3356d8aeded1b540f7e2089a64e4004a5ede6fa52ba0395f
+gemini app features,https://novelistai.com/story/the-cartographer-of-quiet-stars,en,blog,AI,0.98,page-explicit-disclosure,67568ff6f3b2a5087b728b280aaf13953320f8914c1b993b5d3a38826bca11bd
+gemini app features,https://novelistai.com/story/embers-of-the-last-nomad,en,blog,AI,0.98,page-explicit-disclosure,7c0f6a3557daa2c3a000aec87bf643d1fa94d7bf8e45669bb57532026590a614
+gemini app features,https://novelistai.com/story/echoes-in-the-floorboards,en,blog,AI,0.98,page-explicit-disclosure,b5cdcc5b4531c3b51dcbdeee85b933c53e2460d11386382a5688f3ebdded900e
+gemini app features,https://www.aiweirdness.com/learn-the-birds/,en,blog,AI,0.95,site-ai-domain,37798d0582aaf1e2ceadba1928f604cf6b1b24e84648fca629d061de7a6b94ec
+gemini app features,https://www.aiweirdness.com/bonus-more-chocolates/,en,blog,AI,0.95,site-ai-domain,922ff9563fc2fd8dfbfe7e990a1933e661e070d80b277204e2ebfa5c52be3f0e
+gemini app features,https://nextjs.org/docs/app/api-reference/config/next-config-js/htmlLimitedBots,en,docs,Human,0.98,docs-site,1a1fea0b81692686aed5a107b5ec965714e45373cd8bf286412eeb5df9612ac6
+google ai blog,https://ai-sdk.dev/cookbook/guides/agent-skills,en,docs,Human,0.99,hard-negative-ai-topic,fad6a433f548db5eed14d21afca80d84616eef3686f671d59da5c8058e770bd3
+google ai blog,https://ai-sdk.dev/cookbook/guides/claude-4,en,docs,Human,0.99,hard-negative-ai-topic,6f905c74b4361dc697ac0d6810e356057730f62daa048af0479832566f59a483
+google ai blog,https://nextjs.org/docs/app/api-reference/config/next-config-js/httpAgentOptions,en,docs,Human,0.98,docs-site,7452655736dfc1710a1369f1f1da0ac5b139b104d66fd983308d1b41525ee7a4
+google ai blog,https://nextjs.org/docs/app/api-reference/config/next-config-js/images,en,docs,Human,0.98,docs-site,f0cc640052436be1ac551a91ae8bc17e72b0064907c24ecb28012ff1d64c28f5
+google ai blog,https://novelistai.com/story/the-silent-auction,en,blog,AI,0.98,page-explicit-disclosure,e0f0a606c19b41a51eea7b789018a0f30fc785da67465e0d47331f40883db9ea
+google ai blog,https://novelistai.com/story/whispers-of-the-forbidden-veil,en,blog,AI,0.98,page-explicit-disclosure,a0c01da6f9f195467e21e2fb66575745bd1eaf91d55f79225e2f6450f0df4ab3
+google ai blog,https://novelistai.com/story/celestial-accord-the-liberation-of-lux,en,blog,AI,0.98,page-explicit-disclosure,ec154618c536a212ccc449ae9063fbf60be761a0ddbfd3019bbab2b2aa23df31
+google ai blog,https://www.aiweirdness.com/ai-advent-calendar-2022/,en,blog,AI,0.95,site-ai-domain,b73a51dddc78ef921122cd1b80907e54c3b5ab540e467f0bbed3235d4181a329
+google ai blog,https://www.aiweirdness.com/learn-the-mammals-with-dall-e3/,en,blog,AI,0.95,site-ai-domain,1a3495e23855d22a4cf12fc704a1e1530c99f8234feeb59e2da2b56e5c2b8280
+google ai blog,https://nextjs.org/docs/app/api-reference/config/next-config-js/incrementalCacheHandlerPath,en,docs,Human,0.98,docs-site,f7f117dfe5fc3b59587b53b54f4eea4af529f32c977cbd6a2e3971777ee31d69
+ai sdk chatbot docs,https://ai-sdk.dev/cookbook/guides/computer-use,en,docs,Human,0.99,hard-negative-ai-topic,b9413c9459e9c77fce1026e4549c1821fa0fc6e4f1f4cd356ba83ebfca5d027e
+ai sdk chatbot docs,https://ai-sdk.dev/cookbook/guides/custom-memory-tool,en,docs,Human,0.99,hard-negative-ai-topic,bc000834a18fd9625fdaccdecb9d7f9db96bdd1a3d557d8935eab300b758d941
+ai sdk chatbot docs,https://nextjs.org/docs/app/api-reference/config/next-config-js/inlineCss,en,docs,Human,0.98,docs-site,2a7c9430c9456cb02b22d81033d9bc88f3cd6e56bfc8093b25a7848fd0ecfe44
+ai sdk chatbot docs,https://nextjs.org/docs/app/api-reference/config/next-config-js/isolatedDevBuild,en,docs,Human,0.98,docs-site,e4fa1ac6ba98deb4dc882643a881161b8a2daca62c60bfbf364612fbf9fdc1b1
+ai sdk chatbot docs,https://novelistai.com/story/the-orchard-of-quiet-bone,en,blog,AI,0.98,page-explicit-disclosure,1ca14abb65dc473ea227b41d9fe29ea91fad0e0272ab408f83a21111c7563cec
+ai sdk chatbot docs,https://novelistai.com/story/ghostly-encounters-untangling-the-science-of-the-supernatural,en,blog,AI,0.98,page-explicit-disclosure,2a66edbfc2fa7ae61511767b058799186dba3c30da5e2b301f9c9cdadbfebf04
+ai sdk chatbot docs,https://novelistai.com/story/o-galo-das-viagens-secretas,en,blog,AI,0.98,page-explicit-disclosure,5956dd824ce8328cf59e8036742b647a0dcbec49718b288f6df2048c8c97f3ae
+ai sdk chatbot docs,https://www.aiweirdness.com/bonus-more-dall-e3-nativity-scenes/,en,blog,AI,0.95,site-ai-domain,d4dd0fe176e80f239b853843cb5a7738599bb6b8c76f838dd142ae43543b90ac
+ai sdk chatbot docs,https://www.aiweirdness.com/bonus-more-mammals/,en,blog,AI,0.95,site-ai-domain,e3e5a231b1cc2b6ccbca4a6985c5cd78ac6e68ca64e0d453cc4173929faff5a8
+ai sdk chatbot docs,https://nextjs.org/docs/app/api-reference/config/next-config-js/logging,en,docs,Human,0.98,docs-site,4a6f7a5df7dc9a527f34539d1caa6edbff0a60097bfca051b535c93fbbbe4a7b
+ai sdk rag agent,https://ai-sdk.dev/cookbook/guides/deepseek-v3-2,en,docs,Human,0.99,hard-negative-ai-topic,d70f67d70c0e2a44ad4aeb650861b4e0b44bf6a24436c05341f597076a2a9c75
+ai sdk rag agent,https://ai-sdk.dev/cookbook/guides/gemini,en,docs,Human,0.99,hard-negative-ai-topic,f0fd5c4da25b24f318fcc8ac9bb242abf6c5037634a3e6ccf6acf651df05431b
+ai sdk rag agent,https://nextjs.org/docs/app/api-reference/config/next-config-js/mdxRs,en,docs,Human,0.98,docs-site,5ec90748c000222824accd10ad085113666f8dce424b3497fe92777cfb4689f0
+ai sdk rag agent,https://nextjs.org/docs/app/api-reference/config/next-config-js/onDemandEntries,en,docs,Human,0.98,docs-site,b8486f7a467129d86c4fa4582e2909e430725da1c958d77cca0a699416d9ceb0
+ai sdk rag agent,https://novelistai.com/story/whispers-of-the-abyss-59,en,blog,AI,0.98,page-explicit-disclosure,91b3ce0d480ba042724c515418f9ae9cb6cfaa483fd596b5ee07be03c553772e
+ai sdk rag agent,https://novelistai.com/story/the-gallery-of-the-shattered,en,blog,AI,0.98,page-explicit-disclosure,cb2d0d5d630cc319fbcb5522443b9b45d093d4d7d15a540fd4c4845b60890bea
+ai sdk rag agent,https://novelistai.com/story/the-isle-of-forgotten-gods,en,blog,AI,0.98,page-explicit-disclosure,73a17da9d81f88e79a262fd327047c1022a7e17ec63faf8e9046cb456a770b73
+ai sdk rag agent,https://www.aiweirdness.com/your-illustrated-guide-to-christmas-carols/,en,blog,AI,0.95,site-ai-domain,b5e8018b1ae63b1a416594dd9a5bc4c2156943ecc7ed89069036411078e8ea2c
+ai sdk rag agent,https://www.aiweirdness.com/bonus-jingle-all-the-way/,en,blog,AI,0.95,site-ai-domain,8084de211fc2c04eb7e8bf734b1a991a4cb9dceba61f63c07f1060e69874f89b
+ai sdk rag agent,https://nextjs.org/docs/app/api-reference/config/next-config-js/optimizePackageImports,en,docs,Human,0.98,docs-site,a592f57f8e09c4dcf9a9d154315a2009827bc8685615d5eac323dd97bedbf8bb
+gemini productivity tips,https://ai-sdk.dev/cookbook/guides/google-gemini-image-generation,en,docs,Human,0.99,hard-negative-ai-topic,1e774a6f3b0978cd008c8f4be07445f1a7dcc7066d8beb3adaf9015159d0552f
+gemini productivity tips,https://ai-sdk.dev/cookbook/guides/gpt-5,en,docs,Human,0.99,hard-negative-ai-topic,e0228ee59605870732f556c80b23fe8595efa6964801039cc5ed8b1062d2a3b9
+gemini productivity tips,https://nextjs.org/docs/app/api-reference/config/next-config-js/output,en,docs,Human,0.98,docs-site,10b16177abc11f2cdd137932eeec9a6eca31a54fdc285263d5c77e7ea2cf805f
+gemini productivity tips,https://nextjs.org/docs/app/api-reference/config/next-config-js/pageExtensions,en,docs,Human,0.98,docs-site,46a4a14f19b05f4915f1884e797bcf4f06bcce62c79a988565c6241a7949e5f1
+gemini productivity tips,https://novelistai.com/story/unshakable-mastering-the-art-of-standing-your-ground,en,blog,AI,0.98,page-explicit-disclosure,8e95377486d34b8c845a9a4804bde582921359ea3180ebf309e17f9cc51aea0a
+gemini productivity tips,https://novelistai.com/story/whispers-beneath-the-ashen-roots,en,blog,AI,0.98,page-explicit-disclosure,d83688c72bbf81febd7a502c746e7b9e65d02a05de44e2cfd7cf3747e95866d5
+gemini productivity tips,https://novelistai.com/story/the-salt-catching-house,en,blog,AI,0.98,page-explicit-disclosure,354453c09c052d377fb2d2137ef8946034349225f620e3e436cdc616b3943b46
+gemini productivity tips,https://www.aiweirdness.com/thanksgiving-table/,en,blog,AI,0.95,site-ai-domain,22752617901c78cbec2268f49b279038d22bf71d6aa9d2680311cb4c17481c4c
+gemini productivity tips,https://www.aiweirdness.com/bonus-more-christmas-scenes/,en,blog,AI,0.95,site-ai-domain,39e7c1a3733a1cc51410fa1bb46d1e953872d897dd7a015f74f1fb6428884d53
+gemini productivity tips,https://nextjs.org/docs/app/api-reference/config/next-config-js/poweredByHeader,en,docs,Human,0.98,docs-site,bc1cef464bfabca6bf740b51a09866fb64af3d6bcec9af97e041a9f0a94d78de
+ai policy blog,https://ai-sdk.dev/cookbook/guides/llama-3_1,en,docs,Human,0.99,hard-negative-ai-topic,e8414bd1cafcb2c75e01225d3c2dc4404a5430d484246617749aa841a6158fb0
+ai policy blog,https://ai-sdk.dev/cookbook/guides/multi-modal-chatbot,en,docs,Human,0.99,hard-negative-ai-topic,9888d7d609d56ddf4f48b1bff04a9bb753e154976ddd7876f6fd268bb6f2981f
+ai policy blog,https://nextjs.org/docs/app/api-reference/config/next-config-js/productionBrowserSourceMaps,en,docs,Human,0.98,docs-site,67eedd2987d3e5fa074c226ee872ce8febe37ed177d448aa855b33cda5828afa
+ai policy blog,https://nextjs.org/docs/app/api-reference/config/next-config-js/proxyClientMaxBodySize,en,docs,Human,0.98,docs-site,135c0c7134315a08c9a5df0cd876faa176fecd078c8947385e2f27721740c164
+ai policy blog,https://novelistai.com/story/cartography-of-afternoons,en,blog,AI,0.98,page-explicit-disclosure,fd59d33a3b98270e35dff30a0dd2497567af26c66eaa9040ed007471e8c75716
+ai policy blog,https://novelistai.com/story/echoes-of-riven-earth,en,blog,AI,0.98,page-explicit-disclosure,f1927b67a8fc6ef709de4419a6f3f878595d2256df6fc9c3328af5527c1f8ccf
+ai policy blog,https://novelistai.com/story/the-third-ledger,en,blog,AI,0.98,page-explicit-disclosure,4b067f5bae5275d09a34ea5011b2e193ca6d7f9b197159dfac62b6b819d061db
+ai policy blog,https://www.aiweirdness.com/learn-your-fruits-and-vegetables/,en,blog,AI,0.95,site-ai-domain,c071e4b1c84ddfe1902e63bdd2cd7e1facee37f4f3e8fcce2d1bf4f708861396
+ai policy blog,https://www.aiweirdness.com/the-spookiest-halloween-scenes/,en,blog,AI,0.95,site-ai-domain,26fbf4c9cc4fb4b8790c53fdd4bf7638b0d830c81c57f00fcb29ca6d51b8f877
+ai policy blog,https://nextjs.org/docs/app/api-reference/config/next-config-js/reactCompiler,en,docs,Human,0.98,docs-site,87b8dd5f98fdfe7a0c55f38f8127215314c3a2d02042baaf520212eac704f43f
+ai model evaluations,https://ai-sdk.dev/cookbook/guides/natural-language-postgres,en,docs,Human,0.99,hard-negative-ai-topic,4058fc2d651717bb4865cc0fb0d7a6c6662b7684eb55cfcaad815321c028ece6
+ai model evaluations,https://ai-sdk.dev/cookbook/guides/o1,en,docs,Human,0.99,hard-negative-ai-topic,6b82a273a167be1e38864598dd77502490d00e00a5f956ff582a9bd8ef1b2199
+ai model evaluations,https://nextjs.org/docs/app/api-reference/config/next-config-js/reactMaxHeadersLength,en,docs,Human,0.98,docs-site,905abe1b71ad00b04d92dfbca637f8185d6f573de5673bbf1346b4075ec95343
+ai model evaluations,https://nextjs.org/docs/app/api-reference/config/next-config-js/reactStrictMode,en,docs,Human,0.98,docs-site,75f4f913f39b319ad2547fdd3f2fa8a8718d8ee10a91f4be8050dc8b49d88709
+ai model evaluations,https://novelistai.com/story/whispers-of-the-watch-on-reservation,en,blog,AI,0.98,page-explicit-disclosure,9d4ca153b02aba0e958984f4254dd308b28bd9a6bed2225eba6a1cd9bdd0d566
+ai model evaluations,https://novelistai.com/story/mission-manageable-chaos,en,blog,AI,0.98,page-explicit-disclosure,4440032a049882e8b71da413f7ee85b5a893fa9ef0bc668e5cd713af0adbdc4b
+ai model evaluations,https://novelistai.com/story/nightglass,en,blog,AI,0.98,page-explicit-disclosure,7cb4d2df9d5471af74fe3ae11c8d21244467c8721f4523a87ab90a80d0907300
+ai model evaluations,https://www.aiweirdness.com/bonus-learning-about-fruits-and-vegetables/,en,blog,AI,0.95,site-ai-domain,b5a04404f9a5b17e488b437bfa74b449668595738052960f4dbb9b6a85daf924
+ai model evaluations,https://www.aiweirdness.com/bonus-more-spooky-halloween-scenes/,en,blog,AI,0.95,site-ai-domain,59b8a0aa73882e8c44ae277e9c8572dc8b12852dddeba3686c3ea56756feaf9e
+ai model evaluations,https://nextjs.org/docs/app/api-reference/config/next-config-js/redirects,en,docs,Human,0.98,docs-site,8ed9e12ffaff162b939bc8d0ce1ee4333f04f6bc46da54c41c24762c5e632140
+ai coding workflow,https://ai-sdk.dev/cookbook/guides/o3,en,docs,Human,0.99,hard-negative-ai-topic,477c1c6e6225bf7dea45e951f80cb947b76ea277c9a94dc6237557dfc7e1872b
+ai coding workflow,https://ai-sdk.dev/cookbook/guides/openai-responses,en,docs,Human,0.99,hard-negative-ai-topic,512d78c8073a275fcc805ee02322a76d383695639cd0b00cac43d40bd3828dd8
+ai coding workflow,https://nextjs.org/docs/app/api-reference/config/next-config-js/rewrites,en,docs,Human,0.98,docs-site,f677466e3f4ff1d0f2d3a53d3c88cce6fd398c9508a0f7cb330f59c738bb85ec
+ai coding workflow,https://nextjs.org/docs/app/api-reference/config/next-config-js/sassOptions,en,docs,Human,0.98,docs-site,9838235c9ff386dbf9a92a5f06d3d85618a657fdbf973698e97e8ae16ceae30f
+ai coding workflow,https://novelistai.com/story/the-crowkeeper-s-map,en,blog,AI,0.98,page-explicit-disclosure,118e78b361fd21695d43e3afdce7d519567ab71f404086d802a6aebaa264e72e
+ai coding workflow,https://novelistai.com/story/shadows-and-light-the-unseen-journey-of-elena-voss,en,blog,AI,0.98,page-explicit-disclosure,b77057a63cd73878342326520c75a8af815bc1d2ae197bf5d32c512abb545309
+ai coding workflow,https://novelistai.com/story/the-bureau-of-minor-disasters,en,blog,AI,0.98,page-explicit-disclosure,012bc89ff4b227f1cec2e796b9781c46e95bf07877a602770b8bcb3c9ad548d2
+ai coding workflow,https://www.aiweirdness.com/bonus-these-memes-do-not-exist/,en,blog,AI,0.95,site-ai-domain,bfa526d43e352b96defa816eb3921dc25bb0a1e0e577d7ac2d2a47c0b9c1f1e6
+ai coding workflow,https://www.aiweirdness.com/bonus-there-was-no-2020-botober/,en,blog,AI,0.95,site-ai-domain,4d7e96636845ff802d5d06eac7ba8a4517e88027d4c91e50d04cf45ae1a5df67
+ai coding workflow,https://nextjs.org/docs/app/api-reference/config/next-config-js/serverActions,en,docs,Human,0.98,docs-site,8661e7cbf8629e323f59c92927586dc2ee08f221a0f20552f3161e9f10c2abd5
+ai fantasy novel,https://ai-sdk.dev/cookbook/guides/r1,en,docs,Human,0.99,hard-negative-ai-topic,9eab183fff799fbb57a6b6c317484226cae08e3d59ec160f0d64824206809df6
+ai fantasy novel,https://ai-sdk.dev/cookbook/guides/rag-chatbot,en,docs,Human,0.99,hard-negative-ai-topic,5e18d02d02a45cf0a50a5067ec5eec1902557871fc8b6bd8e7f0074d7b7173aa
+ai fantasy novel,https://nextjs.org/docs/app/api-reference/config/next-config-js/serverComponentsHmrCache,en,docs,Human,0.98,docs-site,8afbd10805e6a9f5f8af53722037cdbbacbb1171d45469a9ac24edf1b3c0e337
+ai fantasy novel,https://nextjs.org/docs/app/api-reference/config/next-config-js/serverExternalPackages,en,docs,Human,0.98,docs-site,b4f0ef5fea280185bddaaa568722cb276472cba2b79c3b21b0a5eab33648ffe5
+ai fantasy novel,https://novelistai.com/story/the-obsidian-compass-4,en,blog,AI,0.98,page-explicit-disclosure,6fdcdbbce91eb496a700358f22d245e5ffc3369b2a98e8ba1788d64089814b89
+ai fantasy novel,https://novelistai.com/story/the-bone-orchard-of-sir-gilyon,en,blog,AI,0.98,page-explicit-disclosure,24fd3d400de9687e4d6cdda9f14707703f1c2f2a9eff7c67d51ee54155ad7a14
+ai fantasy novel,https://novelistai.com/story/ink-and-embers-2,en,blog,AI,0.98,page-explicit-disclosure,d5975ff16c590d4fecee50d51337ed3b89c3fe6fbaa3ab68a1afcf6d8c43b259
+ai fantasy novel,https://www.aiweirdness.com/choose-your-candy/,en,blog,AI,0.95,site-ai-domain,387c4f87eb5f9b1ed31c50127e5b830ba56e7539ab5a879a0c439df5ef0a2fad
+ai fantasy novel,https://www.aiweirdness.com/bonus-more-thanksgiving-tables/,en,blog,AI,0.95,site-ai-domain,924a9b52a67e2b0440ea6c139fa586f9fa41b0aea9ff41d8f0d2e57a39f0004c
+ai fantasy novel,https://novelistai.com/story/whispers-beneath-the-silken-moon,en,blog,AI,0.98,page-explicit-disclosure,5cf931c9552fda33c4584a1390bd9e7f4106f62f1f80a71e1ae1e7d05226e05f
+free ai novel,https://ai-sdk.dev/cookbook/guides/slackbot,en,docs,Human,0.99,hard-negative-ai-topic,055ae182d6515511edee663700678f58eba80baca61755557913e3406a4f64c2
+free ai novel,https://ai-sdk.dev/cookbook/guides/sonnet-3-7,en,docs,Human,0.99,hard-negative-ai-topic,5d742fc18f843db5b821d5a8bccd67488fc88d057404f527bde9865f3dfd29f4
+free ai novel,https://nextjs.org/docs/app/api-reference/config/next-config-js/staleTimes,en,docs,Human,0.98,docs-site,cfc3edcbcfea8d46be0c06b3580e0f4a764b15c87d69cc8a9712500b17c2abad
+free ai novel,https://nextjs.org/docs/app/api-reference/config/next-config-js/staticGeneration,en,docs,Human,0.98,docs-site,07b96a5cc8bf981a90240b90c9ecfe4c040ab419046fcd062999ed8cb8915b1f
+free ai novel,https://novelistai.com/story/shadows-over-the-typewriter,en,blog,AI,0.98,page-explicit-disclosure,7c437883a8bd92faf8a21b911adfeec8e428be3f0a224b8b26206f6de02a4f37
+free ai novel,https://novelistai.com/story/echoes-of-the-eternal-philosophical-probes-into-divine-antecedents,en,blog,AI,0.98,page-explicit-disclosure,623c873c2bd0e865a72b60c4580d66e2c018dd51cd94f94b286b12c5a988e6fa
+free ai novel,https://novelistai.com/story/embers-of-destiny-3,en,blog,AI,0.98,page-explicit-disclosure,e4a7363b6547f1bbfdfc7696a005d1d378506a89ae5d8e15ce041b18af6a717a
+free ai novel,https://www.aiweirdness.com/attempts-to-generate-a-spotless-giraffe/,en,blog,AI,0.95,site-ai-domain,a7516fc0652f6a0aa7740d7c33c4f2389a040f3ee99ef689b7de87b2af80be0b
+free ai novel,https://www.aiweirdness.com/bonus-more-weird-candy/,en,blog,AI,0.95,site-ai-domain,708ddc3ef1d837188a718c65f1f924261a8b023c4e7b5053ae17ddefd3515e65
+free ai novel,https://novelistai.com/story/the-forgotten-frontier-1,en,blog,AI,0.98,page-explicit-disclosure,e0d6037d4bb6f11fce1100c9e0347562291087f6ef5e1b8ceacb2fbe464ccefc
+gpt generated story,https://ai-sdk.dev/cookbook/next/caching-middleware,en,docs,Human,0.99,hard-negative-ai-topic,2fbddd06078b8aa5bd1b08cab44d89469c7378d4e1872f3c82c260e854dcad51
+gpt generated story,https://ai-sdk.dev/cookbook/next/call-tools,en,docs,Human,0.99,hard-negative-ai-topic,4defa3cb06da4c71ee3d5342f54c2948ed502378834c9a62190017a45123bc5b
+gpt generated story,https://nextjs.org/docs/app/api-reference/config/next-config-js/taint,en,docs,Human,0.98,docs-site,e78a2dda4ed832177433d1f41bc95308ea10620512f17179b157ef389cd10855
+gpt generated story,https://nextjs.org/docs/app/api-reference/config/next-config-js/trailingSlash,en,docs,Human,0.98,docs-site,bf12fbecc42b099f7e0eb72a30918f251e329baad3ded27467649931af98bbd1
+gpt generated story,https://novelistai.com/story/the-secret-of-willow-creek-4,en,blog,AI,0.98,page-explicit-disclosure,2807b2d40f5033f0bebb09697fdb8d99f74c29f376723d0ae7b8ce60965a4cf0
+gpt generated story,https://novelistai.com/story/echoes-of-the-void-22,en,blog,AI,0.98,page-explicit-disclosure,2c6fa8f6bba0f2408081b691dd9ad838c16916d0639cd8890a12b8760413c20d
+gpt generated story,https://novelistai.com/story/orbs-of-eternal-tide,en,blog,AI,0.98,page-explicit-disclosure,a19603a3073087c871fc063409462c8c07abfe6286dd75465de138a3bcbea4a8
+gpt generated story,https://www.aiweirdness.com/ai-vs-a-giraffe-with-no-spots/,en,blog,AI,0.95,site-ai-domain,268ad29ca1b9cf2ccdc14f432975e65bdd31b98a3ef4fcb2cbe662a03aa521a3
+gpt generated story,https://www.aiweirdness.com/trolling-chatbots-with-made-up-memes/,en,blog,AI,0.95,site-ai-domain,67f40372588e1814d029ecbee523c8ddbc8fc578e0d284c39707be24e9ecbeee
+gpt generated story,https://novelistai.com/story/the-starship-elias,en,blog,AI,0.98,page-explicit-disclosure,c5fed9a41738e7b12b6fc78f64b9f7098ecc8cc6e1e3f1a8c89b0030a1a61ccc
+ai generated humor,https://ai-sdk.dev/cookbook/next/call-tools-multiple-steps,en,docs,Human,0.99,hard-negative-ai-topic,945006bf852aaefbb7a91862bbc564059c894ac8658b08458e8090a0155300a8
+ai generated humor,https://ai-sdk.dev/cookbook/next/chat-with-pdf,en,docs,Human,0.99,hard-negative-ai-topic,6c4951aa5021ea12dc441dc3dd8abb0325283edbf3dcf2472e78c80954ad915c
+ai generated humor,https://nextjs.org/docs/app/api-reference/config/next-config-js/transpilePackages,en,docs,Human,0.98,docs-site,77d405064e64c3b63ac024470541efbdea1a3e99f3a3dddd9f848b9adff389c6
+ai generated humor,https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack,en,docs,Human,0.98,docs-site,8067ac44f764cf427ff8c3ddd9927d6872f3742858ef1fcfe64bf9ead4aea4ea
+ai generated humor,https://novelistai.com/story/whispers-in-the-amber-light,en,blog,AI,0.98,page-explicit-disclosure,c37dbfcef0076ed4f49bb8ba94c4fc4ec3bc35dc28a7d5eae0c4235a1f7e4b96
+ai generated humor,https://novelistai.com/story/silicon-shadows-2,en,blog,AI,0.98,page-explicit-disclosure,5ba1bdce0efadd5cd51e686ea898736c6d0f3f0ebf73b4179265a40ed8ef468c
+ai generated humor,https://novelistai.com/story/neuronal-shackles,en,blog,AI,0.98,page-explicit-disclosure,9e518a5fb0f26505a713b9eaafd3494b23a021565117e076dc818bf2b371da45
+ai generated humor,https://www.aiweirdness.com/the-emoji-of-the-future/,en,blog,AI,0.95,site-ai-domain,daaf7aa9622fd978fd76ca8bb76faec39a1ca9e693950aeb9b207c434df72ac6
+ai generated humor,https://www.aiweirdness.com/bonus-more-baby-onesie-ideas/,en,blog,AI,0.95,site-ai-domain,749f231718b320c6c4811b91e04fac330d4ca6e44c53d4979def776c44057964
+ai generated humor,https://novelistai.com/story/beneath-the-glass-veil-2,en,blog,AI,0.98,page-explicit-disclosure,464642698021838b732a60decd951755a7cd5e9e3195f5b9f9ea5135ec86e89b
+machine generated writing,https://ai-sdk.dev/cookbook/next/custom-stream-format,en,docs,Human,0.99,hard-negative-ai-topic,740faaa32cbb9567a3b72f0e873ae3b97d2590797c225a40f0bdd2765613f539
+machine generated writing,https://ai-sdk.dev/cookbook/next/generate-image-with-chat-prompt,en,docs,Human,0.99,hard-negative-ai-topic,2a57f92fa595abf86db07ca54dbf38b90470cda4faf14c947f268a5135d25656
+machine generated writing,https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopackFileSystemCache,en,docs,Human,0.98,docs-site,0c0e4c3dff3a6f18f529ba0c47e02dce8b2d483eb8a0ed1680b063dc1d9a7fd5
+machine generated writing,https://nextjs.org/docs/app/api-reference/config/next-config-js/typedRoutes,en,docs,Human,0.98,docs-site,adb56001f08f1e2339e3c3cb8dd65d0c45be9175fd9fa6a2cc083213f70aa292
+machine generated writing,https://novelistai.com/story/%D0%BA%D1%83%D0%BF%D0%BE%D0%BB-%D0%B2%D0%BB%D0%B0%D1%81%D1%82%D0%B8,en,blog,AI,0.98,page-explicit-disclosure,b228e8393797f060486b60f1b4a223330becd48cbdf94af441533e37715b8bd9
+machine generated writing,https://novelistai.com/story/echoes-of-musk,en,blog,AI,0.98,page-explicit-disclosure,9483c1f4fed83eb77829695d586c1ac4f1402dc44fa30286c94a27e8fd9fc640
+machine generated writing,https://novelistai.com/story/the-misadventures-of-dr-quibble,en,blog,AI,0.98,page-explicit-disclosure,f5ecbd272afbdc27dc29480e7d9f9035890496a5ac2c4c3ab0de1b9536878f08
+machine generated writing,https://www.aiweirdness.com/ai-designed-mastodon-communities/,en,blog,AI,0.95,site-ai-domain,06267733fb04b5a7b25451b476cb810378d953b886ad70cb45f955a615c58aca
+machine generated writing,https://www.aiweirdness.com/halloween-candy/,en,blog,AI,0.95,site-ai-domain,c92b2fa2e62e3585d5ac7b566ad0fcfd18133eb99cefca114381bb938ab9007c
+machine generated writing,https://novelistai.com/story/the-last-ember-of-versailles,en,blog,AI,0.98,page-explicit-disclosure,cb0e0de634703b1c13201fd0c6bf671176b3ad966b9fc27258befb78773d5ffa
+ai bedtime story,https://ai-sdk.dev/cookbook/next/generate-object,en,docs,Human,0.99,hard-negative-ai-topic,a632d2ed9f68e0b6e09bb96ff8f92db09649e316706b43581f07576b8ce0e619
+ai bedtime story,https://ai-sdk.dev/cookbook/next/generate-object-with-file-prompt,en,docs,Human,0.99,hard-negative-ai-topic,83a81c24a9a3a19850bba93d9e76e9414b8ed356957f58fca8e318a7b44c6e92
+ai bedtime story,https://nextjs.org/docs/app/api-reference/config/next-config-js/typescript,en,docs,Human,0.98,docs-site,f224144a3101afd9b3c457fdeb83d66327c4b05563d2ece32e27d3a5c404f38d
+ai bedtime story,https://nextjs.org/docs/app/api-reference/config/next-config-js/urlImports,en,docs,Human,0.98,docs-site,97d537750dabc20d7391aa3911b0ee6c943ce67ef3ee0096ed6c53d27a097893
+ai bedtime story,https://novelistai.com/story/sanctuary-in-ashes,en,blog,AI,0.98,page-explicit-disclosure,bbf0d86da065911a25f57bdb475b28f56dda1743b69e0d532d357214dd1f9be7
+ai bedtime story,https://novelistai.com/story/echoes-in-the-data-vault,en,blog,AI,0.98,page-explicit-disclosure,23d3d49528a0063ae46bd4dd3787a08d2073926929236530ec0ab131eaa8f712
+ai bedtime story,https://novelistai.com/story/willow-and-the-cloudberry-quest,en,blog,AI,0.98,page-explicit-disclosure,5e30f99d9c744eeeaa062c202029665f23676e8c4085e31471b56a6ed6c7b406
+ai bedtime story,https://www.aiweirdness.com/what-does-this-say/,en,blog,AI,0.95,site-ai-domain,844a7c59d093cad47c56580eea058aab62512f6ef81fed1d26b1ffc4a9f7b7eb
+ai bedtime story,https://www.aiweirdness.com/bonus-chatbot-draws-more-stuff/,en,blog,AI,0.95,site-ai-domain,5e5e91c23b5d47d5d5f9e35977818b40b13d5a7828aeb8e53e127a8e7d4ec757
+ai bedtime story,https://novelistai.com/story/operative-shadow,en,blog,AI,0.98,page-explicit-disclosure,e6d6a1624779a2c16633ab47001c9d61cae50144f49500d514663dfe1e167181
+ai generated carols,https://ai-sdk.dev/cookbook/next/generate-text,en,docs,Human,0.99,hard-negative-ai-topic,e29b77c29fa24a1c81d5c8e01b2d34a4efa597d981c524f5077c6a794f12b009
+ai generated carols,https://ai-sdk.dev/cookbook/next/generate-text-with-chat-prompt,en,docs,Human,0.99,hard-negative-ai-topic,b9e554d70bedab51b20d81c4a4b5494a61716655e81b92f8b4178839af1a4593
+ai generated carols,https://vuejs.org/api/application.html,en,docs,Human,0.98,docs-site,740b10c47b8f72f7bedab2866213d7638c9464c28b3d2a0202567732cf09be37
+ai generated carols,https://vuejs.org/api/built-in-components.html,en,docs,Human,0.98,docs-site,c56445512b8f74390823113d7acabb36c1e04005e82e959a73c93719f8f35eb5
+ai generated carols,https://novelistai.com/story/shadows-over-the-golden-gate,en,blog,AI,0.98,page-explicit-disclosure,88b691b471549158b15cefe2238d1b86aee418db327632f584ff8dcb4d951d4f
+ai generated carols,https://novelistai.com/story/the-echoes-in-locker-17,en,blog,AI,0.98,page-explicit-disclosure,9f24564a3897e1ff9cb1f61a3b688866dc878983434eddb84de4556e76549623
+ai generated carols,https://novelistai.com/story/whispers-beneath-the-crimson-veil,en,blog,AI,0.98,page-explicit-disclosure,b5cfa2b84a057975b037c5f88e817247c41947c04c238193d9002d714ffd1372
+ai generated carols,https://www.aiweirdness.com/chatbot-svg/,en,blog,AI,0.95,site-ai-domain,3503696714da71ac67409030e2884ce6a362333887e447c30781462804f10044
+ai generated carols,https://www.aiweirdness.com/bonus-crow-or-cow/,en,blog,AI,0.95,site-ai-domain,f7f2b9944b7870a3ab1d80e4045348df8e4e3520cd346863138b6bb419dd44c5
+ai generated carols,https://novelistai.com/story/veins-of-velvet-longing,en,blog,AI,0.98,page-explicit-disclosure,b8c60f49689e7afd71779fa8eaee5ce0c8b20a3c0fe0de52f54b15309a7d8d20
+ai generated novel library,https://ai-sdk.dev/cookbook/next/human-in-the-loop,en,docs,Human,0.99,hard-negative-ai-topic,f362ba2f443307ca9faaaa08d41ae7acc55adec3d8d229fb42b0bcf856125527
+ai generated novel library,https://ai-sdk.dev/cookbook/next/markdown-chatbot-with-memoization,en,docs,Human,0.99,hard-negative-ai-topic,48b35cb7e574be6b473e185df47ac0507c2d260cb5b42e3c963e944e30a7076a
+ai generated novel library,https://vuejs.org/api/built-in-directives.html,en,docs,Human,0.98,docs-site,88b4cb464bbee3e6e0ebedd4ecee1e626aeabe2a8e529cc2fc5575ced499fe8f
+ai generated novel library,https://vuejs.org/api/built-in-special-attributes.html,en,docs,Human,0.98,docs-site,7302cc536e404bae53d6d5b0fb3edfc2ff8b84366d0eac496023a161f894a2e7
+ai generated novel library,https://novelistai.com/story/the-last-embers,en,blog,AI,0.98,page-explicit-disclosure,552ec1bf472b3a638c11d0a7609fdd67ef3561ae992700683b1e94a3f7c6ef2f
+ai generated novel library,https://novelistai.com/story/echoes-of-the-forgotten-war,en,blog,AI,0.98,page-explicit-disclosure,63e1ee447b1c0378aec4925997d054f08f59a4ee7087f9625a416bd060432b8d
+ai generated novel library,https://novelistai.com/story/the-last-call-at-murphy-s,en,blog,AI,0.98,page-explicit-disclosure,c59299d2b3aa374956f3c0278afca7747746960dc5ce7d142bebcabbef61b568
+ai generated novel library,https://www.aiweirdness.com/bonus-chatgpt-cheats-badly-too/,en,blog,AI,0.95,site-ai-domain,882a4158749d3fd5ddf4021973fb6bda280a2b39809c79d931fa779d9504c3c7
+ai generated novel library,https://www.aiweirdness.com/bonus-several-ways-of-looking-at-a-sandwich-hole/,en,blog,AI,0.95,site-ai-domain,64c38d4664ce6b415889285399fcdcbb12a54c7ea9e9f57d0b0b51dc81b5bdb9
+ai generated novel library,https://novelistai.com/story/la-sendera-dels-ulls-cecs,en,blog,AI,0.98,page-explicit-disclosure,631fe3aea310e68fa4480b66fb701bc88506bd955ae7a0ceed3e4932ffab2412
+ai weird writing,https://ai-sdk.dev/cookbook/next/mcp-tools,en,docs,Human,0.99,hard-negative-ai-topic,10e75444aabef674aa7089da5dff02d103b1d2c56955a8c3f13f530360e8bcf0
+ai weird writing,https://ai-sdk.dev/cookbook/next/render-visual-interface-in-chat,en,docs,Human,0.99,hard-negative-ai-topic,c672f09932db0ced0ca9e7a5475d69d8b608b0747a82efd25c46b546edd3a071
+ai weird writing,https://vuejs.org/api/built-in-special-elements.html,en,docs,Human,0.98,docs-site,e78ade3632788b56ac652334256bd1e492395cd0845fffae87ae81c47a34b79e
+ai weird writing,https://vuejs.org/api/compile-time-flags.html,en,docs,Human,0.98,docs-site,008dffd8b6fedca1498ea12c8e1ece36ce362a2d5e199c0c076610579744571d
+ai weird writing,https://novelistai.com/story/the-last-reflection-1,en,blog,AI,0.98,page-explicit-disclosure,cf2c29478996ad8ec4927d56c16dd31eefec40d32e5a459db3b691506e2e850c
+ai weird writing,https://novelistai.com/story/the-midwife-s-shadow,en,blog,AI,0.98,page-explicit-disclosure,6a12b58978197353c3c7b35219903bb831e2420b9a974ac54b12d49caa9453c7
+ai weird writing,https://novelistai.com/story/eclipsed-bonds-1,en,blog,AI,0.98,page-explicit-disclosure,f5cb2625d0044becccd072ce55031cecc42b884ec60671ce70d72c6a98684dc1
+ai weird writing,https://www.aiweirdness.com/optimum-tic-tac-toe/,en,blog,AI,0.95,site-ai-domain,f4802528d116cd13144b077c93dcd1a11f955a7fe707e8a977146ee4a83bd71c
+ai weird writing,https://www.aiweirdness.com/bonus-more-extrapolated-emoji/,en,blog,AI,0.95,site-ai-domain,50874cf7e41a5b96dafa23a9d739b0b5c8be2dbc202f67efe01b3a143c27db09
+ai weird writing,https://novelistai.com/story/whispers-of-wealth,en,blog,AI,0.98,page-explicit-disclosure,3b59fddad58637ced81987ccabaf4e2b9857555bac92c6ef2bfa34ce919bf401
+ai short story generator,https://ai-sdk.dev/cookbook/next/send-custom-body-from-use-chat,en,docs,Human,0.99,hard-negative-ai-topic,e834db98a5681c28b4f7f1e5ea523ec9919711f384abc5155af5551961509c25
+ai short story generator,https://ai-sdk.dev/cookbook/next/stream-object,en,docs,Human,0.99,hard-negative-ai-topic,55c7a742539f4f2f22032c64e1f63fdec2987404e96cd96b101162313c28e1e5
+ai short story generator,https://vuejs.org/api/component-instance.html,en,docs,Human,0.98,docs-site,4f14fe8c20382771dfa093f09496c1eb17e1d5b58f26fbb77fecff8822e1f81c
+ai short story generator,https://vuejs.org/api/composition-api-dependency-injection.html,en,docs,Human,0.98,docs-site,97e323c886d5c1fc40528870cf0058e34da56bb3caf5b9c5528594cd5b61bb93
+ai short story generator,https://novelistai.com/story/echoes-of-tomorrow-59,en,blog,AI,0.98,page-explicit-disclosure,6e8e4457dc6d719ad0c8ed7e85bcfbd17e7e7390dbc0200799248ab9d2a540fe
+ai short story generator,https://novelistai.com/story/the-crows-of-hollow-hill,en,blog,AI,0.98,page-explicit-disclosure,dfde36f483e137d751931dbaeb2bc4f3638c630d88c60b5de98443989dd5e964
+ai short story generator,https://novelistai.com/story/the-whispering-caverns-1,en,blog,AI,0.98,page-explicit-disclosure,498987f667d161f3ea9643d319c4cc69735936bb1fa18bf27f52953489b034f2
+ai short story generator,https://www.aiweirdness.com/ascii-art-by-chatbot/,en,blog,AI,0.95,site-ai-domain,e2d7053b7e7ad887c851407144a1b94981de6bb4c29f19825b2f46e89cac88cd
+ai short story generator,https://www.aiweirdness.com/bonus-more-chatbot-ascii-art/,en,blog,AI,0.95,site-ai-domain,f24017d32d4a9d8ed4332c6147f2370f9a4602df44db50a6954ba73f23c9fbdb
+ai short story generator,https://novelistai.com/story/echoes-of-the-abyss-91,en,blog,AI,0.98,page-explicit-disclosure,faeec98b80060d918a7a37b45a83815cd63429cfdc3f25865f4c60da8372cb75
