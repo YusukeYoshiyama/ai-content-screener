@@ -2,6 +2,7 @@
 
 const FETCH_TIMEOUT_MS = 8000;
 const MAX_HTML_BYTES = 1024 * 1024 * 2;
+const SUPPORTED_FETCH_PROTOCOL = "https:";
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (!message || message.type !== "FETCH_HTML" || !message.url) {
@@ -23,15 +24,19 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 async function fetchHtml(url) {
-  if (!/^https?:\/\//i.test(url)) {
+  const parsedUrl = parseFetchUrl(url);
+  if (!parsedUrl) {
     throw new Error("Unsupported URL");
+  }
+  if (parsedUrl.protocol !== SUPPORTED_FETCH_PROTOCOL) {
+    throw new Error("Only HTTPS fetch is supported");
   }
 
   const controller = new AbortController();
   const timerId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(parsedUrl.href, {
       method: "GET",
       redirect: "follow",
       signal: controller.signal
@@ -58,5 +63,13 @@ async function fetchHtml(url) {
     };
   } finally {
     clearTimeout(timerId);
+  }
+}
+
+function parseFetchUrl(value) {
+  try {
+    return new URL(String(value || ""));
+  } catch (_error) {
+    return null;
   }
 }

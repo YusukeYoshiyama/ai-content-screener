@@ -3,10 +3,12 @@
 (() => {
   const SETTINGS_KEY = "settings";
   const CACHE_PREFIX = "cache:";
-  const CACHE_VERSION = 7;
+  const CACHE_VERSION = 8;
   const DEFAULT_CACHE_TTL_HOURS = 24 * 7;
   const SEARCH_SCAN_DEBOUNCE_MS = 250;
   const ANALYSIS_CONCURRENCY = 2;
+  const FETCH_SUPPORTED_PROTOCOL = "https:";
+  const FETCH_UPGRADE_PROTOCOL = "http:";
   const MIN_ANALYZABLE_TEXT_LENGTH = 180;
   const MIN_META_DESCRIPTION_LENGTH = 40;
   const MAX_IDENTICAL_LINE_REPEATS = 1;
@@ -351,19 +353,45 @@
   }
 
   async function fetchAndExtractPayload(url) {
+    const fetchUrl = resolveFetchUrl(url);
+    if (!fetchUrl) {
+      return createEmptyPayload("fetched");
+    }
+
     try {
       const response = await sendMessage({
         type: "FETCH_HTML",
-        url
+        url: fetchUrl
       });
       if (!response || !response.ok || !response.html) {
         return createEmptyPayload("fetched");
       }
-      return extractFromHtml(response.html, response.finalUrl || url);
+      return extractFromHtml(response.html, response.finalUrl || fetchUrl);
     } catch (error) {
       console.debug("[ai-screener] fetch fallback to snippet", error);
       return createEmptyPayload("fetched");
     }
+  }
+
+  function resolveFetchUrl(rawUrl) {
+    let parsed = null;
+    try {
+      parsed = new URL(rawUrl);
+    } catch (_error) {
+      return "";
+    }
+
+    if (parsed.protocol === FETCH_SUPPORTED_PROTOCOL) {
+      return parsed.href;
+    }
+
+    // Keep review-friendly HTTPS-only permissions while still trying the common HTTP->HTTPS upgrade path.
+    if (parsed.protocol === FETCH_UPGRADE_PROTOCOL) {
+      parsed.protocol = FETCH_SUPPORTED_PROTOCOL;
+      return parsed.href;
+    }
+
+    return "";
   }
 
   function buildPayloadFromSnippet(result) {
