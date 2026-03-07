@@ -3,11 +3,13 @@
 (() => {
   const SETTINGS_KEY = "settings";
   const CACHE_PREFIX = "cache:";
-  const CACHE_VERSION = 3;
+  const CACHE_VERSION = 7;
   const DEFAULT_CACHE_TTL_HOURS = 24 * 7;
   const SEARCH_SCAN_DEBOUNCE_MS = 250;
   const ANALYSIS_CONCURRENCY = 2;
   const MIN_ANALYZABLE_TEXT_LENGTH = 180;
+  const MIN_META_DESCRIPTION_LENGTH = 40;
+  const MAX_IDENTICAL_LINE_REPEATS = 1;
   const RESULT_H3_SELECTOR = "#search a h3";
   const RESULT_CONTAINER_SELECTOR = "div.MjjYud, div.g";
   const RESULT_SNIPPET_SELECTOR = ".VwiC3b, .IsZvec, .s3v9rd";
@@ -31,6 +33,18 @@
     ".post",
     ".entry-content",
     ".article-body"
+  ];
+  const NON_CONTENT_NODE_SELECTORS = [
+    "script,style,noscript,svg,canvas,iframe,form,template",
+    "nav,footer,header,aside",
+    "[hidden],[aria-hidden='true'],input[type='hidden']",
+    "[style*='display:none'],[style*='display: none'],[style*='visibility:hidden'],[style*='visibility: hidden']",
+    "[class*='dummy'],[class*='placeholder'],[class*='skeleton'],[class*='loading'],[class*='pager'],[class*='controller'],[class*='dotList'],[class*='dots']"
+  ];
+  const META_DESCRIPTION_SELECTORS = [
+    "meta[name='description']",
+    "meta[property='og:description']",
+    "meta[name='twitter:description']"
   ];
 
   const DEFAULT_SETTINGS = {
@@ -296,10 +310,16 @@
 
   async function resolvePayloadForResult(result) {
     const fetched = await fetchAndExtractPayload(result.url);
-    if (shouldFallbackToSnippet(fetched)) {
-      return buildPayloadFromSnippet(result);
+    if (!shouldFallbackToSnippet(fetched)) {
+      return fetched;
     }
-    return fetched;
+
+    const descriptionPayload = buildPayloadFromMetaDescription(result, fetched);
+    if (descriptionPayload) {
+      return descriptionPayload;
+    }
+
+    return buildPayloadFromSnippet(result);
   }
 
   function shouldFallbackToSnippet(payload) {
@@ -353,6 +373,25 @@
       headingsText: result.title || "",
       externalLinkCount: 0,
       source: "snippet"
+    };
+  }
+
+  function buildPayloadFromMetaDescription(result, payload) {
+    const description = normalizeText(payload.metaDescription || "");
+    if (description.length < MIN_META_DESCRIPTION_LENGTH) {
+      return null;
+    }
+
+    const heading = normalizeText(payload.headingsText || result.title || "");
+    const text = heading && !description.startsWith(heading)
+      ? normalizeText(`${heading}\n${description}`)
+      : description;
+
+    return {
+      text,
+      headingsText: heading,
+      externalLinkCount: Number(payload.externalLinkCount) || 0,
+      source: "meta"
     };
   }
 
@@ -477,6 +516,7 @@
     return {
       text: "",
       headingsText: "",
+      metaDescription: "",
       externalLinkCount: 0,
       source
     };
@@ -489,23 +529,20 @@
     }
 
     const clone = body.cloneNode(true);
-    for (const node of clone.querySelectorAll("script,style,noscript,svg,canvas,iframe,form")) {
-      node.remove();
-    }
-    for (const node of clone.querySelectorAll("nav,footer,header,aside")) {
-      node.remove();
-    }
+    pruneNonContentNodes(clone);
 
     const mainElement = pickMainTextElement(clone);
-    const text = normalizeText(mainElement.innerText || clone.innerText || "");
+    const text = postProcessExtractedText(mainElement.innerText || clone.innerText || "");
     const headingsText = Array.from(mainElement.querySelectorAll("h1,h2,h3"))
       .map((node) => normalizeText(node.innerText || ""))
       .filter(Boolean)
       .join(" ");
+    const metaDescription = readMetaDescription(doc);
 
     return {
       text,
       headingsText,
+      metaDescription,
       externalLinkCount: countExternalLinks(mainElement, url),
       source
     };
@@ -526,6 +563,68 @@
     }
 
     return best || root;
+  }
+
+  function pruneNonContentNodes(root) {
+    for (const selector of NON_CONTENT_NODE_SELECTORS) {
+      removeNodesBySelector(root, selector);
+    }
+  }
+
+  function removeNodesBySelector(root, selector) {
+    for (const node of root.querySelectorAll(selector)) {
+      node.remove();
+    }
+  }
+
+  function postProcessExtractedText(value) {
+    const seen = new Map();
+    const lines = String(value || "")
+      .replace(/\u3000+/g, " ")
+      .split(/\n+/)
+      .map((line) => normalizeText(line))
+      .filter(Boolean)
+      .filter((line) => !isUiOnlyLine(line));
+
+    const kept = [];
+    for (const line of lines) {
+      const count = seen.get(line) || 0;
+      if (count >= MAX_IDENTICAL_LINE_REPEATS) {
+        continue;
+      }
+      seen.set(line, count + 1);
+      kept.push(line);
+    }
+
+    return kept.join("\n");
+  }
+
+  function isUiOnlyLine(line) {
+    const value = String(line || "").trim();
+    if (!value) {
+      return true;
+    }
+    if (/^(前へ|次へ|prev|next|\d+)$/i.test(value)) {
+      return true;
+    }
+    if (/^[\p{P}\p{S}ー・]+$/u.test(value)) {
+      return true;
+    }
+    if (/^[A-Z0-9\-_.]{1,6}$/u.test(value)) {
+      return true;
+    }
+    return value.length < 4 && !/[。！？!?.]/.test(value);
+  }
+
+  function readMetaDescription(doc) {
+    for (const selector of META_DESCRIPTION_SELECTORS) {
+      const content = normalizeText(doc.querySelector(selector)?.getAttribute("content") || "");
+      if (content) {
+        return content;
+      }
+    }
+
+    return "";
   }
 
   function countExternalLinks(root, pageUrl) {
@@ -964,6 +1063,7 @@
   function normalizeText(value) {
     return String(value || "")
       .replace(/\u00a0/g, " ")
+      .replace(/\u3000/g, " ")
       .replace(/[ \t\f\v]+/g, " ")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
