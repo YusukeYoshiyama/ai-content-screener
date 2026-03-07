@@ -39,3 +39,6 @@ temp/
 # Local datasets and generated evaluation outputs
 data/raw/
 data/processed/
+
+# Personal notes
+docs/
