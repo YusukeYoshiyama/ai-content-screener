@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Validate release ref and main ancestry
+      - name: Validate release ref and main head
         run: |
           if [[ ! "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Tag must match vX.Y.Z format."
@@ -37,8 +37,11 @@ jobs:
           fi
 
           git fetch --no-tags origin main
-          if ! git merge-base --is-ancestor "${GITHUB_SHA}" "origin/main"; then
-            echo "Tagged commit is not contained in origin/main."
+          MAIN_SHA="$(git rev-parse origin/main)"
+          echo "tagged_sha=${GITHUB_SHA}"
+          echo "origin_main_sha=${MAIN_SHA}"
+          if [[ "${GITHUB_SHA}" != "${MAIN_SHA}" ]]; then
+            echo "Tagged commit must exactly match origin/main."
             exit 1
           fi
 
