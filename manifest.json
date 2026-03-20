@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AI Content Screener",
   "description": "検索結果にAI生成っぽさスコアを表示します。",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icons": {
     "16": "icon/icon16.png",
     "32": "icon/icon32.png",
@@ -27,6 +27,9 @@
       "js": [
         "src/content/hash-model.js",
         "src/content/hash-model-ja.js",
+        "src/content/core.js",
+        "src/content/analysis.js",
+        "src/content/ui.js",
         "src/content/main.js"
       ],
       "run_at": "document_idle"
