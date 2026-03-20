@@ -1,487 +1,72 @@
 #!/usr/bin/env python3
-"""
-Unified entrypoint for dataset download, dataset build, and detector evaluation.
-"""
+"""Unified entrypoint for dataset download, dataset build, and detector evaluation."""
 
 from __future__ import annotations
 
 import argparse
 import concurrent.futures
 import csv
-import hashlib
 import json
 import math
 import os
 import random
-import re
-import statistics
 import sys
 import urllib.parse
-import urllib.request
-import xml.etree.ElementTree as ET
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import pyarrow as pa
 import pyarrow.parquet as pq
-from bs4 import BeautifulSoup
 from sklearn.linear_model import LogisticRegression
 
-
-DEFAULT_AI_COLUMNS = [
-    "gemma-2-9b",
-    "mistral-7B",
-    "qwen-2-72B",
-    "llama-8B",
-    "accounts/yi-01-ai/models/yi-large",
-    "GPT_4-o",
-]
-DEFAULT_MODEL_PATH = "data/processed/hash_nb_model_4096_sampled.json"
-DEFAULT_HUMAN_THRESHOLD = 0.45
-DEFAULT_AI_THRESHOLD = 0.55
-DEFAULT_LIVE_CACHE_DIR = Path("data/live_cache")
-DEFAULT_WEB_HUMAN_MANIFEST = Path("data/live_eval/web_human.csv")
-DEFAULT_WEB_AI_MANIFEST = Path("data/live_eval/web_ai.csv")
-DEFAULT_WEB_AI_PAGE_MANIFEST = Path("data/live_eval/web_ai_page.csv")
-DEFAULT_WEB_AI_SITE_MANIFEST = Path("data/live_eval/web_ai_site.csv")
-DEFAULT_SERP_AUDIT_MANIFEST = Path("data/live_eval/serp_audit.csv")
-DEFAULT_REGRESSION_CASES_MANIFEST = Path("data/live_eval/regression_cases.csv")
-DEFAULT_HYBRID_MODEL_PATH = Path("data/processed/hybrid_hash_nb_model_4096_sampled.json")
-DEFAULT_HYBRID_MODEL_JA_PATH = Path("data/processed/hybrid_hash_nb_model_4096_ja.json")
-DEFAULT_MODEL_JS_PATH = Path("src/content/hash-model.js")
-DEFAULT_MODEL_JS_JA_PATH = Path("src/content/hash-model-ja.js")
-DEFAULT_COLLECT_LIVE_OUTPUT = Path("data/live_eval/live_seed.csv")
-GSINGH_PARQUET_PATH = Path("data/raw/gsingh1-py__train/0000__0000.parquet")
-DMITVA_PARQUET_DIR = Path("data/raw/dmitva__human_ai_generated_text")
-JAPANESE_HUMAN_PARQUET_PATHS = [
-    Path("data/raw/hpprc__jawiki-news-paragraphs/0000__0000.parquet"),
-    Path("data/raw/hpprc__jawiki-books-paragraphs/0000__0000.parquet"),
-]
-JAPANESE_AI_MESSAGE_PARQUET_PATHS = [
-    Path("data/raw/Aratako__Synthetic-Japanese-Roleplay-NSFW-gpt-5-chat-5k-formatted/0000__0000.parquet"),
-    Path("data/raw/Aratako__Synthetic-Japanese-Roleplay-NSFW-Claude-4.5s-3.5k-formatted/0000__0000.parquet"),
-]
-JAPANESE_AI_INSTRUCTION_PARQUET_PATH = Path("data/raw/CausalLM__GPT-4-Self-Instruct-Japanese/0000__0000.parquet")
+from data_tools_lib.text_pipeline import (
+    DEFAULT_AI_COLUMNS,
+    DEFAULT_AI_THRESHOLD,
+    DEFAULT_COLLECT_LIVE_OUTPUT,
+    DEFAULT_HUMAN_THRESHOLD,
+    DEFAULT_HYBRID_MODEL_JA_PATH,
+    DEFAULT_HYBRID_MODEL_PATH,
+    DEFAULT_LIVE_CACHE_DIR,
+    DEFAULT_MODEL_JS_JA_PATH,
+    DEFAULT_MODEL_JS_PATH,
+    DEFAULT_MODEL_PATH,
+    DEFAULT_REGRESSION_CASES_MANIFEST,
+    DEFAULT_SERP_AUDIT_MANIFEST,
+    DEFAULT_WEB_AI_PAGE_MANIFEST,
+    DEFAULT_WEB_AI_SITE_MANIFEST,
+    DEFAULT_WEB_HUMAN_MANIFEST,
+    DMITVA_PARQUET_DIR,
+    FEATURE_NAMES,
+    GSINGH_PARQUET_PATH,
+    JAPANESE_AI_INSTRUCTION_PARQUET_PATH,
+    JAPANESE_AI_MESSAGE_PARQUET_PATHS,
+    JAPANESE_HUMAN_PARQUET_PATHS,
+    Payload,
+    LiveRecord,
+    build_live_records_from_specs,
+    build_text_metrics,
+    clamp,
+    clamp01,
+    collapse_whitespace,
+    detector_normalize_text,
+    ensure_download,
+    fetch_and_extract_live_payload,
+    fetch_json,
+    is_likely_japanese_text,
+    manifest_hash_for_payload,
+    mean_or_zero,
+    normalize_live_value,
+    read_live_manifest,
+    sanitize_dataset_name,
+    text_hash,
+    write_live_manifest,
+)
 
 WORKER_MODEL: Optional[Dict] = None
 WORKER_MODEL_JA: Optional[Dict] = None
-JP_CHAR_RE = re.compile(r"[\u3040-\u30ff\u4e00-\u9fff]")
-HIRAGANA_RE = re.compile(r"[\u3040-\u309f]")
-KATAKANA_RE = re.compile(r"[\u30a0-\u30ff]")
-KANJI_RE = re.compile(r"[\u4e00-\u9fff]")
-LATIN_RE = re.compile(r"[A-Za-z]")
-DIGIT_RE = re.compile(r"\d")
-PUNCTUATION_RE = re.compile(r"[。．！？!?.,;:：；、]")
-SYMBOL_RE = re.compile(r"[\-–—_/\\|+=*&^%$#@~`\"'(){}\\[\\]<>]")
-DATE_LIKE_RE = re.compile(r"(?:\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}月\d{1,2}日|\d{1,2}/\d{1,2})")
-CURRENCY_RE = re.compile(r"(?:¥|\$|€|£|円|USD|JPY)")
-PRODUCT_CODE_RE = re.compile(r"\b[A-Z0-9][A-Z0-9._-]{3,}\b")
-WORD_RE = re.compile(r"[A-Za-z']+")
-SENTENCE_SPLIT_RE = re.compile(r"(?:[。！？!?]+|\.\s+)")
-BULLET_LINE_RE = re.compile(r"^(?:[-*•・]|[0-9]{1,2}[.)]|[0-9]{1,2}[:：])")
-UI_ONLY_LINE_RE = re.compile(r"^(?:前へ|次へ|prev|next|\d+)$", re.IGNORECASE)
-STOPWORDS_EN = {
-    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "has", "have", "in", "is", "it", "its",
-    "of", "on", "or", "that", "the", "to", "was", "were", "will", "with", "this", "these", "those", "you",
-    "your", "we", "our", "can", "not", "if", "then", "than", "about", "into", "which", "what", "when", "where"
-}
-AI_DISCLOSURE_REGEXES = [
-    re.compile(pattern, re.IGNORECASE)
-    for pattern in [
-        r"\bai-generated\b",
-        r"\bgenerated by ai\b",
-        r"\bmachine-generated\b",
-        r"\bmachine generated\b",
-        r"\bwritten with (?:gpt|ai)\b",
-        r"\bcreated with (?:gpt|ai)\b",
-        r"\bgenerated with (?:ai|gpt|a neural network|neural network|neural net)\b",
-        r"\bthis (?:story|text|article|post|content) was generated\b",
-        r"\babove text is machine-generated\b",
-        r"\bfree ai-generated (?:novel|story|book)\b",
-        r"\bai novel writing technology\b",
-        r"ai生成",
-        r"aiで生成",
-        r"生成ai",
-        r"aiが作成",
-        r"aiで作成",
-    ]
-]
-AI_ROUTE_HINT_REGEXES = [
-    re.compile(pattern, re.IGNORECASE)
-    for pattern in [
-        r"/story(?:/|$)",
-        r"/stories(?:/|$)",
-        r"/novel(?:/|$)",
-        r"/novels(?:/|$)",
-        r"/fiction(?:/|$)",
-        r"/generated(?:/|$)",
-        r"/prompt(?:/|$)",
-        r"\bai (?:book|novel|story|fiction)\b",
-        r"\bmachine-generated\b",
-    ]
-]
-OFFICIAL_GUARD_REGEXES = [
-    re.compile(pattern, re.IGNORECASE)
-    for pattern in [
-        r"(^|[/.])docs[/.]",
-        r"/docs?(?:/|$)",
-        r"/support(?:/|$)",
-        r"/help(?:/|$)",
-        r"/pricing(?:/|$)",
-        r"/product(?:s)?(?:/|$)",
-        r"/feature(?:/|$)",
-        r"/spec(?:s)?(?:/|$)",
-        r"/shop(?:/|$)",
-        r"/store(?:/|$)",
-        r"apple\.com",
-        r"google\.",
-        r"anthropic\.com",
-        r"openai\.com",
-        r"vercel\.com",
-        r"pokemon\.co\.jp",
-        r"pokemoncenter-online\.com",
-    ]
-]
-ARTICLE_CANDIDATE_SELECTORS = [
-    "article",
-    "main",
-    "[role='main']",
-    "[itemprop='articleBody']",
-    ".post",
-    ".entry-content",
-    ".article-body",
-]
-NON_CONTENT_NODE_SELECTORS = [
-    "script,style,noscript,svg,canvas,iframe,form,template",
-    "nav,footer,header,aside",
-    "[hidden],[aria-hidden='true'],input[type='hidden']",
-    "[style*='display:none'],[style*='display: none'],[style*='visibility:hidden'],[style*='visibility: hidden']",
-    "[class*='dummy'],[class*='placeholder'],[class*='skeleton'],[class*='loading'],[class*='pager'],"
-    "[class*='controller'],[class*='dotList'],[class*='dots']",
-]
-META_DESCRIPTION_SELECTORS = [
-    "meta[name='description']",
-    "meta[property='og:description']",
-    "meta[name='twitter:description']",
-]
-SITEMAP_NS = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
-MAX_IDENTICAL_LINE_REPEATS = 1
-MIN_ANALYZABLE_TEXT_LENGTH = 180
-MIN_META_DESCRIPTION_LENGTH = 40
-FEATURE_NAMES = [
-    "base_hash_score",
-    "log_text_length",
-    "sentence_count",
-    "avg_sentence_length",
-    "sentence_length_std",
-    "line_count",
-    "short_line_ratio",
-    "repeat_line_ratio",
-    "unique_line_ratio",
-    "bullet_line_ratio",
-    "heading_body_ratio",
-    "numeric_char_ratio",
-    "date_like_ratio",
-    "currency_like_ratio",
-    "product_code_ratio",
-    "external_link_density",
-    "punctuation_char_ratio",
-    "symbol_char_ratio",
-    "quality_score",
-    "explicit_ai_disclosure",
-    "ai_route_hint",
-    "shell_page_ratio",
-    "official_guard",
-    "meta_body_gap",
-    "source_body",
-    "source_meta",
-    "source_snippet",
-    "jp_char_ratio",
-    "hiragana_ratio",
-    "katakana_ratio",
-    "kanji_ratio",
-    "latin_ratio",
-    "stopword_ratio",
-    "vocab_richness",
-]
-
-
-@dataclass
-class Payload:
-    text: str
-    headings_text: str = ""
-    meta_description: str = ""
-    external_link_count: int = 0
-    source: str = "body"
-    url: str = ""
-    quality_score: float = 0.0
-    metrics: Dict[str, float] = field(default_factory=dict)
-
-
-@dataclass
-class LiveRecord:
-    query: str
-    url: str
-    lang: str
-    domain_type: str
-    label: str
-    label_confidence: float
-    label_reason: str
-    last_verified_hash: str
-
-
-def collapse_whitespace(text: str) -> str:
-    return re.sub(r"\s+", " ", str(text or "").replace("\u00a0", " ")).strip()
-
-
-def detector_normalize_text(value: str) -> str:
-    return re.sub(r"[ \t\f\v]+", " ", str(value or "").replace("\u00a0", " ")).strip().lower()
-
-
-def text_hash(text: str) -> str:
-    return hashlib.sha256(collapse_whitespace(text).encode("utf-8")).hexdigest()
-
-
-def clamp01(value: float) -> float:
-    return clamp(value, 0.0, 1.0)
-
-
-def mean_or_zero(values: Sequence[float]) -> float:
-    if not values:
-        return 0.0
-    return float(sum(values) / len(values))
-
-
-def stdev_or_zero(values: Sequence[float]) -> float:
-    if len(values) < 2:
-        return 0.0
-    return float(statistics.pstdev(values))
-
-
-def normalize_live_value(value: str) -> str:
-    return str(value or "").strip()
-
-
-def normalize_text(value: str) -> str:
-    return (
-        str(value or "")
-        .replace("\u00a0", " ")
-        .replace("\u3000", " ")
-        .replace("\r", "\n")
-        .strip()
-    )
-
-
-def split_lines(value: str) -> List[str]:
-    return [normalize_text(line) for line in str(value or "").splitlines()]
-
-
-def is_ui_only_line(value: str) -> bool:
-    line = normalize_live_value(value)
-    if not line:
-        return True
-    if UI_ONLY_LINE_RE.fullmatch(line):
-        return True
-    if re.fullmatch(r"[\W_ー・]+", line):
-        return True
-    if re.fullmatch(r"[A-Z0-9._-]{1,6}", line):
-        return True
-    return len(line) < 4 and not re.search(r"[。！？!?.,]", line)
-
-
-def dedupe_lines(lines: Iterable[str]) -> List[str]:
-    seen: Dict[str, int] = {}
-    kept: List[str] = []
-    for raw_line in lines:
-        line = normalize_live_value(raw_line)
-        if not line or is_ui_only_line(line):
-            continue
-        count = seen.get(line, 0)
-        if count >= MAX_IDENTICAL_LINE_REPEATS:
-            continue
-        seen[line] = count + 1
-        kept.append(line)
-    return kept
-
-
-def post_process_extracted_text(value: str) -> str:
-    return "\n".join(dedupe_lines(split_lines(value)))
-
-
-def split_sentences(text: str) -> List[str]:
-    value = normalize_live_value(text)
-    if not value:
-        return []
-    parts = [segment.strip() for segment in SENTENCE_SPLIT_RE.split(value) if segment and segment.strip()]
-    return parts or [value]
-
-
-def count_ratio(pattern: re.Pattern[str], text: str) -> float:
-    value = str(text or "")
-    if not value:
-        return 0.0
-    return len(pattern.findall(value)) / max(1, len(value))
-
-
-def tokenize_words(text: str) -> List[str]:
-    return [token.lower() for token in WORD_RE.findall(str(text or ""))]
-
-
-def is_likely_japanese_text(text: str) -> bool:
-    sample = str(text or "")[:2400]
-    if not sample:
-        return False
-    jp_count = len(JP_CHAR_RE.findall(sample))
-    if jp_count >= 40:
-        return True
-    return jp_count >= 8 and (jp_count / max(1, len(sample))) >= 0.03
-
-
-def has_explicit_ai_disclosure(*values: str) -> bool:
-    combined = "\n".join(normalize_live_value(value) for value in values if value)
-    if not combined:
-        return False
-    return any(pattern.search(combined) for pattern in AI_DISCLOSURE_REGEXES)
-
-
-def has_ai_route_hint(page_url: str, headings_text: str = "") -> bool:
-    combined = "\n".join(value for value in [normalize_live_value(page_url), normalize_live_value(headings_text)] if value)
-    if not combined:
-        return False
-    return any(pattern.search(combined) for pattern in AI_ROUTE_HINT_REGEXES)
-
-
-def looks_official_guarded(page_url: str) -> bool:
-    value = normalize_live_value(page_url)
-    if not value:
-        return False
-    return any(pattern.search(value) for pattern in OFFICIAL_GUARD_REGEXES)
-
-
-def compute_shell_page_ratio(metrics: Dict[str, float]) -> float:
-    short_line_ratio = float(metrics.get("short_line_ratio", 0.0))
-    repeat_line_ratio = float(metrics.get("repeat_line_ratio", 0.0))
-    heading_ratio = float(metrics.get("heading_body_ratio", 0.0))
-    sentence_count = float(metrics.get("sentence_count", 0.0))
-    punctuation_ratio = float(metrics.get("punctuation_char_ratio", 0.0))
-    text_length = float(metrics.get("text_length", 0.0))
-
-    sentence_penalty = clamp01((4.0 - min(sentence_count, 4.0)) / 4.0)
-    punctuation_penalty = clamp01((0.03 - min(punctuation_ratio, 0.03)) / 0.03)
-    length_penalty = clamp01((480.0 - min(text_length, 480.0)) / 480.0)
-    ratio = (
-        0.28 * short_line_ratio
-        + 0.24 * repeat_line_ratio
-        + 0.22 * clamp01(heading_ratio / 0.4)
-        + 0.14 * sentence_penalty
-        + 0.07 * punctuation_penalty
-        + 0.05 * length_penalty
-    )
-    return clamp01(ratio)
-
-
-def build_text_metrics(
-    text: str,
-    headings_text: str = "",
-    external_link_count: int = 0,
-    source: str = "body",
-    *,
-    page_url: str = "",
-    meta_quality_score: float = 0.0,
-    body_quality_score: float = 0.0,
-) -> Dict[str, float]:
-    normalized_text = normalize_live_value(text)
-    lines = dedupe_lines(split_lines(normalized_text))
-    sentences = split_sentences(normalized_text)
-    sentence_lengths = [len(sentence) for sentence in sentences if sentence]
-    short_line_count = sum(1 for line in lines if len(line) <= 24)
-    bullet_line_count = sum(1 for line in lines if BULLET_LINE_RE.search(line))
-    unique_line_ratio = len(set(lines)) / max(1, len(lines))
-    repeat_line_ratio = 1.0 - unique_line_ratio
-    heading_ratio = len(normalize_live_value(headings_text)) / max(1, len(normalized_text))
-    token_list = tokenize_words(normalized_text)
-    vocab_richness = len(set(token_list)) / max(1, len(token_list))
-    stopword_ratio = (
-        sum(1 for token in token_list if token in STOPWORDS_EN) / max(1, len(token_list))
-        if not is_likely_japanese_text(normalized_text)
-        else 0.0
-    )
-
-    metrics = {
-        "text_length": float(len(normalized_text)),
-        "sentence_count": float(len(sentences)),
-        "avg_sentence_length": mean_or_zero(sentence_lengths),
-        "sentence_length_std": stdev_or_zero(sentence_lengths),
-        "line_count": float(len(lines)),
-        "short_line_ratio": short_line_count / max(1, len(lines)),
-        "repeat_line_ratio": repeat_line_ratio,
-        "unique_line_ratio": unique_line_ratio,
-        "bullet_line_ratio": bullet_line_count / max(1, len(lines)),
-        "heading_body_ratio": min(2.0, heading_ratio),
-        "numeric_char_ratio": count_ratio(DIGIT_RE, normalized_text),
-        "date_like_ratio": len(DATE_LIKE_RE.findall(normalized_text)) / max(1, len(sentences) or 1),
-        "currency_like_ratio": len(CURRENCY_RE.findall(normalized_text)) / max(1, len(sentences) or 1),
-        "product_code_ratio": len(PRODUCT_CODE_RE.findall(normalized_text)) / max(1, len(token_list) or 1),
-        "external_link_density": float(external_link_count) / max(1, len(lines)),
-        "punctuation_char_ratio": count_ratio(PUNCTUATION_RE, normalized_text),
-        "symbol_char_ratio": count_ratio(SYMBOL_RE, normalized_text),
-        "jp_char_ratio": count_ratio(JP_CHAR_RE, normalized_text),
-        "hiragana_ratio": count_ratio(HIRAGANA_RE, normalized_text),
-        "katakana_ratio": count_ratio(KATAKANA_RE, normalized_text),
-        "kanji_ratio": count_ratio(KANJI_RE, normalized_text),
-        "latin_ratio": count_ratio(LATIN_RE, normalized_text),
-        "stopword_ratio": stopword_ratio,
-        "vocab_richness": vocab_richness,
-        "source_body": 1.0 if source == "body" else 0.0,
-        "source_meta": 1.0 if source == "meta" else 0.0,
-        "source_snippet": 1.0 if source == "snippet" else 0.0,
-    }
-
-    metrics["quality_score"] = compute_quality_score(metrics, source)
-    metrics["explicit_ai_disclosure"] = 1.0 if has_explicit_ai_disclosure(headings_text, normalized_text) else 0.0
-    metrics["ai_route_hint"] = 1.0 if has_ai_route_hint(page_url, headings_text) else 0.0
-    metrics["shell_page_ratio"] = compute_shell_page_ratio(metrics)
-    metrics["official_guard"] = 1.0 if looks_official_guarded(page_url) and metrics["explicit_ai_disclosure"] < 0.5 else 0.0
-    metrics["meta_body_gap"] = clamp(float(meta_quality_score) - float(body_quality_score), -1.0, 1.0)
-    return metrics
-
-
-def compute_quality_score(metrics: Dict[str, float], source: str) -> float:
-    sentence_signal = 1.0 if metrics["sentence_count"] >= 2 else metrics["sentence_count"] / 2.0
-    content_signal = min(1.0, metrics["text_length"] / 900.0)
-    source_bonus = 0.15 if source == "body" else (0.05 if source == "meta" else -0.05)
-    quality = (
-        0.28 * content_signal
-        + 0.18 * sentence_signal
-        + 0.18 * metrics["unique_line_ratio"]
-        + 0.14 * (1.0 - metrics["short_line_ratio"])
-        + 0.12 * (1.0 - metrics["repeat_line_ratio"])
-        + 0.10 * max(0.0, 1.0 - metrics["bullet_line_ratio"])
-        + source_bonus
-    )
-    return clamp01(quality)
-
-
-def fetch_json(url: str) -> Dict:
-    with urllib.request.urlopen(url, timeout=60) as response:
-        return json.loads(response.read().decode("utf-8"))
-
-
-def sanitize_dataset_name(name: str) -> str:
-    return name.replace("/", "__")
-
-
-def ensure_download(url: str, out_path: Path) -> None:
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    if out_path.exists() and out_path.stat().st_size > 0:
-        return
-    tmp_path = out_path.with_suffix(out_path.suffix + ".part")
-    urllib.request.urlretrieve(url, tmp_path)
-    tmp_path.rename(out_path)
-
 
 def command_download_hf(args: argparse.Namespace) -> None:
     dataset_name = args.dataset.strip()
@@ -533,508 +118,6 @@ def command_download_hf(args: argparse.Namespace) -> None:
     manifest_path = dataset_dir / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"[done] manifest={manifest_path} total_bytes={total_bytes}")
-
-
-def sanitize_fetched_html(html: str) -> str:
-    return re.sub(r"<base\b[^>]*>", "", str(html or ""), flags=re.IGNORECASE)
-
-
-def fetch_html(url: str, timeout: int = 8) -> Tuple[str, str]:
-    current_url = url
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    }
-
-    for _ in range(5):
-        request = urllib.request.Request(current_url, headers=headers)
-        try:
-            with urllib.request.urlopen(request, timeout=timeout) as response:
-                content_type = str(response.headers.get("content-type") or "").lower()
-                if "text/html" not in content_type:
-                    raise ValueError(f"Non-HTML response: {content_type or 'unknown'}")
-                html = response.read(2 * 1024 * 1024).decode("utf-8", errors="replace")
-                return sanitize_fetched_html(html), str(response.geturl() or current_url)
-        except urllib.error.HTTPError as error:
-            if error.code not in {301, 302, 303, 307, 308}:
-                raise
-            location = normalize_live_value(error.headers.get("Location") or "")
-            if not location:
-                raise
-            current_url = urllib.parse.urljoin(current_url, location)
-
-    raise ValueError(f"Too many redirects: {url}")
-
-
-def remove_nodes_by_selector(soup: BeautifulSoup, selector: str) -> None:
-    for node in soup.select(selector):
-        node.decompose()
-
-
-def prune_non_content_nodes(soup: BeautifulSoup) -> None:
-    for selector in NON_CONTENT_NODE_SELECTORS:
-        remove_nodes_by_selector(soup, selector)
-
-
-def read_meta_description_from_soup(soup: BeautifulSoup) -> str:
-    for selector in META_DESCRIPTION_SELECTORS:
-        node = soup.select_one(selector)
-        if node:
-            content = normalize_live_value(node.get("content") or "")
-            if content:
-                return content
-    return ""
-
-
-def get_node_text(node) -> str:
-    return normalize_text(node.get_text("\n", strip=True) if node else "")
-
-
-def pick_main_node(soup: BeautifulSoup):
-    best = None
-    best_length = 0
-    for selector in ARTICLE_CANDIDATE_SELECTORS:
-        for element in soup.select(selector):
-            length = len(collapse_whitespace(get_node_text(element)))
-            if length > best_length:
-                best = element
-                best_length = length
-    return best or soup.body or soup
-
-
-def count_external_links_in_node(node, page_url: str) -> int:
-    try:
-        page_host = urllib.parse.urlparse(page_url).netloc
-    except ValueError:
-        page_host = ""
-
-    count = 0
-    for anchor in node.select("a[href]"):
-        href = normalize_live_value(anchor.get("href"))
-        if not href.startswith("http"):
-            continue
-        try:
-            linked_host = urllib.parse.urlparse(href).netloc
-        except ValueError:
-            continue
-        if not page_host or linked_host != page_host:
-            count += 1
-    return count
-
-
-def extract_payload_from_html(html: str, url: str, source: str = "body") -> Payload:
-    soup = BeautifulSoup(sanitize_fetched_html(html), "html.parser")
-    prune_non_content_nodes(soup)
-    main_node = pick_main_node(soup)
-    text = post_process_extracted_text(get_node_text(main_node))
-    headings = " ".join(
-        filter(
-            None,
-            [normalize_live_value(node.get_text(" ", strip=True)) for node in main_node.select("h1,h2,h3")],
-        )
-    )
-    meta_description = read_meta_description_from_soup(soup)
-    external_link_count = count_external_links_in_node(main_node, url)
-    metrics = build_text_metrics(
-        text,
-        headings_text=headings,
-        external_link_count=external_link_count,
-        source=source,
-        page_url=url,
-    )
-    return Payload(
-        text=text,
-        headings_text=headings,
-        meta_description=meta_description,
-        external_link_count=external_link_count,
-        source=source,
-        url=url,
-        quality_score=metrics["quality_score"],
-        metrics=metrics,
-    )
-
-
-def build_meta_payload(
-    meta_description: str,
-    headings_text: str = "",
-    external_link_count: int = 0,
-    *,
-    page_url: str = "",
-) -> Optional[Payload]:
-    description = normalize_live_value(meta_description)
-    if len(description) < MIN_META_DESCRIPTION_LENGTH:
-        return None
-    text = description
-    if headings_text and not description.startswith(headings_text):
-        text = normalize_live_value(f"{headings_text}\n{description}")
-    metrics = build_text_metrics(
-        text,
-        headings_text=headings_text,
-        external_link_count=external_link_count,
-        source="meta",
-        page_url=page_url,
-    )
-    return Payload(
-        text=text,
-        headings_text=headings_text,
-        meta_description=description,
-        external_link_count=external_link_count,
-        source="meta",
-        url=page_url,
-        quality_score=metrics["quality_score"],
-        metrics=metrics,
-    )
-
-
-def build_snippet_payload(title: str = "", snippet: str = "", *, page_url: str = "") -> Payload:
-    text = normalize_live_value(f"{title}\n{snippet}")
-    metrics = build_text_metrics(
-        text,
-        headings_text=title,
-        external_link_count=0,
-        source="snippet",
-        page_url=page_url,
-    )
-    return Payload(
-        text=text,
-        headings_text=normalize_live_value(title),
-        meta_description="",
-        external_link_count=0,
-        source="snippet",
-        url=page_url,
-        quality_score=metrics["quality_score"],
-        metrics=metrics,
-    )
-
-
-def finalize_selected_payload(
-    selected_payload: Payload,
-    body_payload: Payload,
-    meta_payload: Optional[Payload],
-    *,
-    page_url: str,
-) -> Payload:
-    metrics = dict(selected_payload.metrics or {})
-    body_quality = float(body_payload.quality_score or 0.0)
-    meta_quality = float(meta_payload.quality_score or 0.0) if meta_payload is not None else 0.0
-    metrics["meta_body_gap"] = clamp(meta_quality - body_quality, -1.0, 1.0)
-    metrics["shell_page_ratio"] = max(
-        float(metrics.get("shell_page_ratio") or 0.0),
-        compute_shell_page_ratio(body_payload.metrics or metrics),
-    )
-    metrics["explicit_ai_disclosure"] = 1.0 if has_explicit_ai_disclosure(
-        selected_payload.headings_text,
-        selected_payload.meta_description,
-        selected_payload.text,
-        page_url,
-    ) else 0.0
-    metrics["ai_route_hint"] = 1.0 if has_ai_route_hint(page_url, selected_payload.headings_text) else 0.0
-    metrics["official_guard"] = 1.0 if looks_official_guarded(page_url) and metrics["explicit_ai_disclosure"] < 0.5 else 0.0
-    return Payload(
-        text=selected_payload.text,
-        headings_text=selected_payload.headings_text,
-        meta_description=selected_payload.meta_description,
-        external_link_count=selected_payload.external_link_count,
-        source=selected_payload.source,
-        url=page_url,
-        quality_score=selected_payload.quality_score,
-        metrics=metrics,
-    )
-
-
-def choose_best_payload(
-    body_payload: Payload,
-    meta_payload: Optional[Payload],
-    snippet_payload: Optional[Payload] = None,
-) -> Payload:
-    candidates = [payload for payload in [body_payload, meta_payload, snippet_payload] if payload and payload.text]
-    if not candidates:
-        return body_payload
-    if should_prefer_meta_payload(body_payload, meta_payload):
-        return finalize_selected_payload(
-            meta_payload,  # type: ignore[arg-type]
-            body_payload,
-            meta_payload,
-            page_url=meta_payload.url or body_payload.url,
-        )
-    if body_payload.text and len(body_payload.text) >= MIN_ANALYZABLE_TEXT_LENGTH and body_payload.quality_score >= 0.55:
-        return finalize_selected_payload(body_payload, body_payload, meta_payload, page_url=body_payload.url)
-    chosen = max(candidates, key=lambda payload: (payload.quality_score, len(payload.text)))
-    return finalize_selected_payload(chosen, body_payload, meta_payload, page_url=chosen.url or body_payload.url)
-
-
-def should_prefer_meta_payload(body_payload: Payload, meta_payload: Optional[Payload]) -> bool:
-    if meta_payload is None or not meta_payload.text:
-        return False
-    if not body_payload.text:
-        return True
-
-    metrics = body_payload.metrics or {}
-    text_length = float(metrics.get("text_length") or len(body_payload.text))
-    sentence_count = float(metrics.get("sentence_count") or 0.0)
-    short_line_ratio = float(metrics.get("short_line_ratio") or 0.0)
-    punctuation_ratio = float(metrics.get("punctuation_char_ratio") or 0.0)
-    heading_ratio = float(metrics.get("heading_body_ratio") or 0.0)
-    meta_margin = float(meta_payload.quality_score) - float(body_payload.quality_score)
-
-    body_looks_like_ui = (
-        short_line_ratio >= 0.48
-        and sentence_count <= 4
-        and punctuation_ratio <= 0.025
-        and text_length <= 420
-    )
-    body_is_title_heavy = heading_ratio >= 0.28 and text_length <= 480
-    meta_has_explicit_ai_cue = float(meta_payload.metrics.get("explicit_ai_disclosure", 0.0)) >= 0.5
-    return (
-        ((body_looks_like_ui or body_is_title_heavy) and meta_margin >= -0.05)
-        or (meta_has_explicit_ai_cue and (body_looks_like_ui or body_payload.quality_score < 0.58))
-    )
-
-
-def manifest_hash_for_payload(payload: Payload) -> str:
-    return text_hash(f"{payload.source}\n{payload.text}")
-
-
-def read_live_manifest(path: Path) -> List[LiveRecord]:
-    with path.open("r", encoding="utf-8", newline="") as file:
-        reader = csv.DictReader(file)
-        records: List[LiveRecord] = []
-        for row in reader:
-            records.append(
-                LiveRecord(
-                    query=normalize_live_value(row.get("query")),
-                    url=normalize_live_value(row.get("url")),
-                    lang=normalize_live_value(row.get("lang")),
-                    domain_type=normalize_live_value(row.get("domain_type")),
-                    label=normalize_live_value(row.get("label")),
-                    label_confidence=float(row.get("label_confidence") or 0.0),
-                    label_reason=normalize_live_value(row.get("label_reason")),
-                    last_verified_hash=normalize_live_value(row.get("last_verified_hash")),
-                )
-            )
-        return records
-
-
-def read_url_list(source: str) -> List[str]:
-    parsed = urllib.parse.urlparse(source)
-    if parsed.scheme in {"http", "https"}:
-        with urllib.request.urlopen(
-            urllib.request.Request(source, headers={"User-Agent": "Mozilla/5.0"}),
-            timeout=30,
-        ) as response:
-            text = response.read().decode("utf-8", errors="replace")
-    else:
-        text = Path(source).read_text(encoding="utf-8")
-
-    rows: List[str] = []
-    for raw_line in text.splitlines():
-        line = normalize_live_value(raw_line)
-        if not line or line.startswith("#"):
-            continue
-        if line.startswith("url,"):
-            continue
-        if "," in line and not line.startswith("http"):
-            maybe = normalize_live_value(line.split(",", 1)[0])
-            if maybe.startswith("http"):
-                rows.append(maybe)
-            continue
-        rows.append(line)
-    return rows
-
-
-def compile_seed_patterns(values: Iterable[str]) -> List[re.Pattern[str]]:
-    patterns: List[re.Pattern[str]] = []
-    for value in values:
-        pattern = normalize_live_value(value)
-        if pattern:
-            patterns.append(re.compile(pattern))
-    return patterns
-
-
-def matches_seed_patterns(url: str, include_patterns: Sequence[re.Pattern[str]], exclude_patterns: Sequence[re.Pattern[str]]) -> bool:
-    if include_patterns and not any(pattern.search(url) for pattern in include_patterns):
-        return False
-    if exclude_patterns and any(pattern.search(url) for pattern in exclude_patterns):
-        return False
-    return True
-
-
-def iter_sitemap_urls(source: str) -> Iterator[str]:
-    with urllib.request.urlopen(
-        urllib.request.Request(source, headers={"User-Agent": "Mozilla/5.0"}),
-        timeout=30,
-    ) as response:
-        root = ET.fromstring(response.read())
-
-    locs = [node.text for node in root.findall(".//sm:loc", SITEMAP_NS) if node.text]
-    if root.tag.endswith("sitemapindex"):
-        for loc in locs:
-            yield from iter_sitemap_urls(str(loc))
-        return
-
-    for loc in locs:
-        yield normalize_live_value(str(loc))
-
-
-def iter_rss_urls(source: str) -> Iterator[str]:
-    with urllib.request.urlopen(
-        urllib.request.Request(source, headers={"User-Agent": "Mozilla/5.0"}),
-        timeout=30,
-    ) as response:
-        root = ET.fromstring(response.read())
-
-    for node in root.findall(".//item/link"):
-        if node.text:
-            yield normalize_live_value(node.text)
-    for node in root.findall(".//{http://www.w3.org/2005/Atom}entry/{http://www.w3.org/2005/Atom}link"):
-        href = normalize_live_value(node.get("href"))
-        if href:
-            yield href
-
-
-def build_live_records_from_specs(specs: Sequence[Dict[str, object]]) -> List[LiveRecord]:
-    records: List[LiveRecord] = []
-    seen_urls: set[str] = set()
-
-    for raw_spec in specs:
-        kind = normalize_live_value(raw_spec.get("kind"))
-        source = normalize_live_value(raw_spec.get("source"))
-        if kind not in {"sitemap", "rss", "list"}:
-            raise ValueError(f"Unsupported seed kind: {kind}")
-        if not source:
-            raise ValueError("Seed spec must include source")
-
-        include_patterns = compile_seed_patterns(raw_spec.get("include") or [])
-        exclude_patterns = compile_seed_patterns(raw_spec.get("exclude") or [])
-        limit = max(0, int(raw_spec.get("limit") or 0))
-
-        if kind == "sitemap":
-            urls = iter_sitemap_urls(source)
-        elif kind == "rss":
-            urls = iter_rss_urls(source)
-        else:
-            urls = iter(read_url_list(source))
-
-        added = 0
-        for url in urls:
-            normalized_url = normalize_live_value(url)
-            if not normalized_url or normalized_url in seen_urls:
-                continue
-            if not matches_seed_patterns(normalized_url, include_patterns, exclude_patterns):
-                continue
-            seen_urls.add(normalized_url)
-            records.append(
-                LiveRecord(
-                    query=normalize_live_value(raw_spec.get("query")),
-                    url=normalized_url,
-                    lang=normalize_live_value(raw_spec.get("lang")),
-                    domain_type=normalize_live_value(raw_spec.get("domain_type")),
-                    label=normalize_live_value(raw_spec.get("label")),
-                    label_confidence=float(raw_spec.get("label_confidence") or 0.0),
-                    label_reason=normalize_live_value(raw_spec.get("label_reason")),
-                    last_verified_hash="",
-                )
-            )
-            added += 1
-            if limit and added >= limit:
-                break
-
-    return records
-
-
-def write_live_manifest(path: Path, records: Sequence[LiveRecord]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(
-            file,
-            fieldnames=[
-                "query",
-                "url",
-                "lang",
-                "domain_type",
-                "label",
-                "label_confidence",
-                "label_reason",
-                "last_verified_hash",
-            ],
-        )
-        writer.writeheader()
-        for record in records:
-            writer.writerow(
-                {
-                    "query": record.query,
-                    "url": record.url,
-                    "lang": record.lang,
-                    "domain_type": record.domain_type,
-                    "label": record.label,
-                    "label_confidence": f"{record.label_confidence:.2f}",
-                    "label_reason": record.label_reason,
-                    "last_verified_hash": record.last_verified_hash,
-                }
-            )
-
-
-def url_to_cache_key(url: str) -> str:
-    return hashlib.sha256(normalize_live_value(url).encode("utf-8")).hexdigest()
-
-
-def cache_paths(cache_dir: Path, url: str) -> Tuple[Path, Path]:
-    key = url_to_cache_key(url)
-    return cache_dir / f"{key}.html", cache_dir / f"{key}.json"
-
-
-def cache_payload(cache_dir: Path, url: str, final_url: str, payload: Payload, html: str) -> None:
-    html_path, meta_path = cache_paths(cache_dir, url)
-    meta_path.parent.mkdir(parents=True, exist_ok=True)
-    meta = {
-        "url": url,
-        "final_url": final_url,
-        "source": payload.source,
-        "text": payload.text,
-        "headings_text": payload.headings_text,
-        "meta_description": payload.meta_description,
-        "external_link_count": payload.external_link_count,
-        "quality_score": payload.quality_score,
-        "page_url": payload.url or final_url,
-        "metrics": payload.metrics,
-    }
-    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
-    html_path.write_text(html, encoding="utf-8")
-
-
-def load_cached_payload(cache_dir: Path, url: str) -> Optional[Tuple[Payload, str]]:
-    html_path, meta_path = cache_paths(cache_dir, url)
-    if not meta_path.exists():
-        return None
-    meta = json.loads(meta_path.read_text(encoding="utf-8"))
-    payload = Payload(
-        text=str(meta.get("text") or ""),
-        headings_text=str(meta.get("headings_text") or ""),
-        meta_description=str(meta.get("meta_description") or ""),
-        external_link_count=int(meta.get("external_link_count") or 0),
-        source=str(meta.get("source") or "body"),
-        url=str(meta.get("page_url") or meta.get("final_url") or url),
-        quality_score=float(meta.get("quality_score") or 0.0),
-        metrics=dict(meta.get("metrics") or {}),
-    )
-    return payload, str(meta.get("final_url") or url)
-
-
-def fetch_and_extract_live_payload(record: LiveRecord, cache_dir: Path) -> Tuple[Payload, str]:
-    cached = load_cached_payload(cache_dir, record.url)
-    if cached is not None:
-        return cached
-    html, final_url = fetch_html(record.url)
-    body_payload = extract_payload_from_html(html, final_url, source="body")
-    meta_payload = build_meta_payload(
-        body_payload.meta_description,
-        headings_text=body_payload.headings_text,
-        external_link_count=body_payload.external_link_count,
-        page_url=final_url,
-    )
-    chosen = choose_best_payload(body_payload, meta_payload, None)
-    cache_payload(cache_dir, record.url, final_url, chosen, html)
-    return chosen, final_url
 
 
 def to_test_records(
@@ -1522,6 +605,13 @@ def feature_vector_from_metrics(base_hash_score: float, metrics: Dict[str, float
         float(metrics.get("shell_page_ratio", 0.0)),
         float(metrics.get("official_guard", 0.0)),
         float(metrics.get("meta_body_gap", 0.0)),
+        float(metrics.get("content_generation_cue", 0.0)),
+        float(metrics.get("template_footprint", 0.0)),
+        float(metrics.get("title_body_consistency", 0.0)),
+        float(metrics.get("meta_body_consistency", 0.0)),
+        float(metrics.get("source_disagreement", 0.0)),
+        float(metrics.get("disclaimer_density", 0.0)),
+        float(metrics.get("short_shell_guard", 0.0)),
         float(metrics.get("source_body", 0.0)),
         float(metrics.get("source_meta", 0.0)),
         float(metrics.get("source_snippet", 0.0)),
@@ -1594,16 +684,6 @@ def compute_payload_score(payload: Payload, model: Dict) -> float:
     return apply_calibration(base_hash_score, metrics, model.get("calibration"))
 
 
-def is_likely_japanese_text(text: str) -> bool:
-    sample = str(text or "")[:2400]
-    if not sample:
-        return False
-    jp_count = len(JP_CHAR_RE.findall(sample))
-    if jp_count >= 40:
-        return True
-    return jp_count >= 8 and (jp_count / max(1, len(sample))) >= 0.03
-
-
 def predict_judge(score: float, human_threshold: float, ai_threshold: float) -> str:
     if score < human_threshold:
         return "Human"
@@ -1642,8 +722,8 @@ def load_model(path: Path) -> Dict:
         weights = raw_calibration.get("weights") or []
         means = raw_calibration.get("means") or []
         scales = raw_calibration.get("scales") or []
-        feature_names = raw_calibration.get("feature_names") or FEATURE_NAMES
-        if len(weights) != len(feature_names) or len(means) != len(feature_names) or len(scales) != len(feature_names):
+        feature_names = raw_calibration.get("feature_names") or FEATURE_NAMES[: len(weights)]
+        if len(means) != len(weights) or len(scales) != len(weights):
             raise ValueError("Invalid hybrid calibration: feature vector length mismatch")
         calibration = {
             "feature_names": list(feature_names),
@@ -2182,10 +1262,20 @@ def evaluate_live_manifest(
                 "score": 0.5,
                 "source": "error",
                 "is_japanese": record.lang.lower() == "ja",
+                "quality_score": 0.0,
+                "template_footprint": 0.0,
+                "title_body_consistency": 0.0,
+                "meta_body_consistency": 0.0,
+                "source_disagreement": 0.0,
+                "disclaimer_density": 0.0,
+                "short_shell_guard": 0.0,
+                "content_generation_cue": 0.0,
+                "official_guard": 0.0,
                 "error": str(error),
             }
 
         scored = score_live_payload(payload, model, model_ja)
+        metrics = payload.metrics or {}
         return {
             "query": record.query,
             "url": record.url,
@@ -2197,6 +1287,15 @@ def evaluate_live_manifest(
             "score": round(float(scored["score"]), 6),
             "source": payload.source,
             "is_japanese": bool(scored["is_japanese"]),
+            "quality_score": round(float(metrics.get("quality_score") or 0.0), 6),
+            "template_footprint": round(float(metrics.get("template_footprint") or 0.0), 6),
+            "title_body_consistency": round(float(metrics.get("title_body_consistency") or 0.0), 6),
+            "meta_body_consistency": round(float(metrics.get("meta_body_consistency") or 0.0), 6),
+            "source_disagreement": round(float(metrics.get("source_disagreement") or 0.0), 6),
+            "disclaimer_density": round(float(metrics.get("disclaimer_density") or 0.0), 6),
+            "short_shell_guard": round(float(metrics.get("short_shell_guard") or 0.0), 6),
+            "content_generation_cue": round(float(metrics.get("content_generation_cue") or 0.0), 6),
+            "official_guard": round(float(metrics.get("official_guard") or 0.0), 6),
             "error": "",
         }
 
@@ -2325,6 +1424,82 @@ def command_evaluate_live_suite(args: argparse.Namespace) -> None:
         "model_ja": str(Path(args.model_ja)) if args.model_ja else "",
         "cache_dir": str(cache_dir),
         "suite": suite_results,
+    }
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(output, ensure_ascii=False, indent=2))
+    print(f"summary={output_path}")
+
+
+def classify_live_failure(item: Dict[str, object]) -> Optional[str]:
+    label = normalize_live_value(item.get("label"))
+    judge = normalize_live_value(item.get("judge"))
+    source = normalize_live_value(item.get("source"))
+    if source == "error":
+        return "fetch_or_extract_error"
+    if label == "Human" and judge == "AI":
+        return "Human -> AI"
+    if label == "AI" and judge == "Human":
+        return "AI -> Human"
+    if judge == "Unknown":
+        return "AI/Human -> Unknown"
+    return None
+
+
+def analyze_live_failures(predictions: Sequence[Dict[str, object]]) -> Dict[str, object]:
+    failed = []
+    for item in predictions:
+        failure_type = classify_live_failure(item)
+        if not failure_type:
+            continue
+        enriched = dict(item)
+        enriched["failure_type"] = failure_type
+        if normalize_live_value(item.get("source")) != "error":
+            template = float(item.get("template_footprint") or 0.0)
+            shell = float(item.get("short_shell_guard") or 0.0)
+            disagreement = float(item.get("source_disagreement") or 0.0)
+            if disagreement >= 0.55:
+                enriched["failure_bucket"] = "source mis-selection"
+            elif template >= 0.52:
+                enriched["failure_bucket"] = "template pollution"
+            elif shell >= 0.5:
+                enriched["failure_bucket"] = "short/shell page"
+            else:
+                enriched["failure_bucket"] = "model score miss"
+        else:
+            enriched["failure_bucket"] = "fetch_or_extract_error"
+        failed.append(enriched)
+
+    def counter_by(key: str) -> Dict[str, int]:
+        return dict(Counter(normalize_live_value(item.get(key)) or "(empty)" for item in failed))
+
+    return {
+        "rows": len(failed),
+        "by_failure_type": counter_by("failure_type"),
+        "by_failure_bucket": counter_by("failure_bucket"),
+        "by_domain_type": counter_by("domain_type"),
+        "by_lang": dict(Counter("jp" if item.get("is_japanese") else "non_jp" for item in failed)),
+        "by_source": counter_by("source"),
+        "by_query": counter_by("query"),
+        "examples": failed[: min(60, len(failed))],
+    }
+
+
+def command_analyze_live_failures(args: argparse.Namespace) -> None:
+    input_path = Path(args.input)
+    data = json.loads(input_path.read_text(encoding="utf-8"))
+    suite = data.get("suite")
+    if not isinstance(suite, dict):
+        raise ValueError("Input must be evaluate-live-suite output JSON")
+
+    output = {
+        "input": str(input_path),
+        "analysis": {
+            key: analyze_live_failures(value.get("predictions") or [])
+            for key, value in suite.items()
+            if isinstance(value, dict)
+        },
     }
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -2699,30 +1874,30 @@ def tune_thresholds(
             violations = []
             if validation_summary["strict_accuracy"] < 0.96:
                 violations.append(0.96 - validation_summary["strict_accuracy"])
-            if validation_summary["decided_accuracy"] < 0.97:
-                violations.append(0.97 - validation_summary["decided_accuracy"])
-            if validation_summary["unknown_rate"] > 0.025:
-                violations.append(validation_summary["unknown_rate"] - 0.025)
-            if summary_has_rows(web_human_summary) and float(web_human_summary["human_false_positive_rate"]) > 0.04:
-                violations.append(float(web_human_summary["human_false_positive_rate"]) - 0.04)
-            if summary_has_rows(web_human_summary) and float(web_human_summary["hard_negative_human_false_positive_rate"]) > 0.08:
-                violations.append(float(web_human_summary["hard_negative_human_false_positive_rate"]) - 0.08)
+            if validation_summary["decided_accuracy"] < 0.962:
+                violations.append(0.962 - validation_summary["decided_accuracy"])
+            if validation_summary["unknown_rate"] > 0.03:
+                violations.append(validation_summary["unknown_rate"] - 0.03)
+            if summary_has_rows(web_human_summary) and float(web_human_summary["human_false_positive_rate"]) > 0.03:
+                violations.append(float(web_human_summary["human_false_positive_rate"]) - 0.03)
+            if summary_has_rows(web_human_summary) and float(web_human_summary["hard_negative_human_false_positive_rate"]) > 0.05:
+                violations.append(float(web_human_summary["hard_negative_human_false_positive_rate"]) - 0.05)
             if summary_has_rows(web_human_summary) and max_human_false_positive(web_human_summary["by_domain_type"]) > 0.12:
                 violations.append(max_human_false_positive(web_human_summary["by_domain_type"]) - 0.12)
-            if summary_has_rows(web_ai_page_summary) and float(web_ai_page_summary["ai_recall"]) < 0.94:
-                violations.append(0.94 - float(web_ai_page_summary["ai_recall"]))
+            if summary_has_rows(web_ai_page_summary) and float(web_ai_page_summary["ai_recall"]) < 0.96:
+                violations.append(0.96 - float(web_ai_page_summary["ai_recall"]))
             if summary_has_rows(web_ai_page_summary) and float(web_ai_page_summary["unknown_rate"]) > 0.05:
                 violations.append(float(web_ai_page_summary["unknown_rate"]) - 0.05)
-            if summary_has_rows(web_ai_site_summary) and float(web_ai_site_summary["ai_recall"]) < 0.92:
-                violations.append(0.92 - float(web_ai_site_summary["ai_recall"]))
+            if summary_has_rows(web_ai_site_summary) and float(web_ai_site_summary["ai_recall"]) < 0.93:
+                violations.append(0.93 - float(web_ai_site_summary["ai_recall"]))
             if summary_has_rows(web_ai_site_summary) and float(web_ai_site_summary["unknown_rate"]) > 0.08:
                 violations.append(float(web_ai_site_summary["unknown_rate"]) - 0.08)
-            if summary_has_rows(serp_summary) and float(serp_summary["ai_recall"]) < 0.90:
-                violations.append(0.90 - float(serp_summary["ai_recall"]))
-            if summary_has_rows(serp_summary) and float(serp_summary["human_false_positive_rate"]) > 0.06:
-                violations.append(float(serp_summary["human_false_positive_rate"]) - 0.06)
-            if summary_has_rows(serp_summary) and float(serp_summary["top2_human_false_positive_rate"]) > 0.04:
-                violations.append(float(serp_summary["top2_human_false_positive_rate"]) - 0.04)
+            if summary_has_rows(serp_summary) and float(serp_summary["ai_recall"]) < 0.95:
+                violations.append(0.95 - float(serp_summary["ai_recall"]))
+            if summary_has_rows(serp_summary) and float(serp_summary["human_false_positive_rate"]) > 0.04:
+                violations.append(float(serp_summary["human_false_positive_rate"]) - 0.04)
+            if summary_has_rows(serp_summary) and float(serp_summary["top2_human_false_positive_rate"]) > 0.02:
+                violations.append(float(serp_summary["top2_human_false_positive_rate"]) - 0.02)
             official_bucket = serp_summary["by_domain_type"].get("official", {})
             official_human_fp = float(official_bucket.get("human_false_positive_rate") or 0.0)
             if summary_has_rows(serp_summary) and official_human_fp > 0.07:
@@ -3135,6 +2310,14 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate_live_suite_parser.add_argument("--output", default="data/live_eval/evaluate_live_suite_summary.json", help="Evaluation summary JSON path")
     evaluate_live_suite_parser.add_argument("--include-predictions", action="store_true", help="Embed per-URL predictions in the output JSON")
     evaluate_live_suite_parser.set_defaults(func=command_evaluate_live_suite)
+
+    analyze_live_failures_parser = subparsers.add_parser(
+        "analyze-live-failures",
+        help="Analyze failure buckets from evaluate-live-suite JSON output",
+    )
+    analyze_live_failures_parser.add_argument("--input", required=True, help="evaluate-live-suite JSON path")
+    analyze_live_failures_parser.add_argument("--output", default="data/live_eval/live_failure_analysis.json", help="Failure analysis JSON path")
+    analyze_live_failures_parser.set_defaults(func=command_analyze_live_failures)
 
     train_hybrid_parser = subparsers.add_parser("train-hybrid", help="Train lightweight hybrid calibration layers and export extension models")
     train_hybrid_parser.add_argument("--input", default="data/processed/unified_text_label.parquet", help="Unified parquet path")

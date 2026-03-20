@@ -27,6 +27,9 @@
       "js": [
         "src/content/hash-model.js",
         "src/content/hash-model-ja.js",
+        "src/content/core.js",
+        "src/content/analysis.js",
+        "src/content/ui.js",
         "src/content/main.js"
       ],
       "run_at": "document_idle"
